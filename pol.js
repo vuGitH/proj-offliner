@@ -41,7 +41,7 @@
  *
  *    arg3 = fromFile = '.\\test\\testProjFile.json' ;  // paths relative to main
  *                                                      // proj-offliner package directory
- *           fromFile - is is determined in case (4) bellow
+ *           fromFile - it is determined in case (4) bellow
  *
  *    arg4 = prefixTo = '.\\test\\out\\pathTo_';
  *
@@ -140,8 +140,7 @@ var pol = require('./proj-offliner.js');
 
 var params,
     paramsFile,
-    act,
-    paramsSet = false;
+    act;
 
 if( process.argv.length === 3) {
   paramsFile = pol.hasParamsJson( process.argv[2] );
@@ -167,7 +166,7 @@ if( process.argv.length === 3) {
       pol.pathFrom  = __dirname + '\\test\\out\\pathFrom';
     }else if( act !=='ea' ){
       console.log('argv[2] is not parames file name and not \'ea\'.' +
-          ' Error could has place.')
+          ' Error could has place.');
     }else{
       pol.fromFile = __dirname + '\\test\\testProjFile.json';
     }
