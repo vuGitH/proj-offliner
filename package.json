@@ -1,0 +1,17 @@
+{
+  "name": "proj-offliner",
+  "version": "1.3.1",
+  "description": "Project off-liner. Gets some Google appSript project's json-file, converts it to object,selects appropriated project parts' files  array from jsonObj.files property, parses each element content and saves as separate js-file into specified temporary folder on local PC. Assembles js files editted into new project json file ready for uploading",
+  "main": "./proj-offliner.js",
+  "scripts": {
+    "test": "node ./test/testMe.js",
+    "pol": "node pol.js"
+  },
+  "keywords": [
+    "edit",
+    "off-line",
+    "appScript"
+  ],
+  "author": "Vladimir Uralov <v.url.node@gmail.com>",
+  "license": "ISC"
+}
