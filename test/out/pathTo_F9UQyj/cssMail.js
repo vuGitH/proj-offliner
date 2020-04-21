@@ -11,7 +11,7 @@ a:active{color:hsl(196, 100%, 50%)}
 
 </style>
 <script>
-var mBStyle=document.createDocumentFragment();
+var mBStyle = document.createDocumentFragment();
 mBStyle.appendChild(document.getElementById('mlBodyStyle'));
 document.head.appendChild(mBStyle);
 </script>
