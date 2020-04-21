@@ -158,7 +158,7 @@
  * @property {string} exports.readMe content of description
  */
 exports.readMe = "\n\n" +
-  '\n\'nproj-offliner\' - Package.\n\n' +
+  '\n\'proj-offliner\' - Package.\n\n' +
   'Why?\n' +
   '\n' +
   'Sometime It\'s necessary or convenient  to edit or modify Google \n' +
@@ -247,6 +247,6 @@ exports.readMe = "\n\n" +
   '    pol.assembleProjFile();\n' +
   '';
 exports.readme = function () {
-  console.log(exports.readMe);
+  console.log('print export.readMe string to console:\n' + exports.readMe);
   return exports.readMe;
 };
