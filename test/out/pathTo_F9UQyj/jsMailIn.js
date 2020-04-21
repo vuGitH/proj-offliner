@@ -1,4 +1,4 @@
-//<script id="BildService">
+<script id="BildService">
 var d = window.document;
 var b = d.body;
 /**
@@ -872,4 +872,4 @@ function sendEmail(formEl) {
     .withUserObject();
   sendEMailRunner.sendEMailFormed(formEl);
 }
-//</script>
+</script>
