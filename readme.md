@@ -1,3 +1,7 @@
+<!-- markdownlint-configure-file {
+     } -->
+<!-- markdownlint-configure-file { "MD003": { "style": "atx" } } -->
+
 # proj-offliner package
 
     +----------+    +-----------+    +------------+    +--------------+
@@ -46,10 +50,11 @@ command
 
 ## Usage
 
+<!-- markdownlint-disable MD033 -->
 ### <a name='inComPrompt'></a>  In command line
 
 *(for usage inside your modules scripts go to the
- [usage inside modules](#inModuleUse))*
+ [usage inside modules](#inModuleUse) )*
 
 For usage in command prompt commands make proj-offliner main directory being
 the current working directory.
@@ -219,7 +224,7 @@ In expample (4) -
         js-files will be saved into the temporary folder  
         'disk:\\path\\to\\the\\dirNamePrefix_XXXXXX' ,
         where XXXXXX are six random alpha numerical characters.
-_
+
 
     npm run pol a fromFile pathFrom          (5)
 
@@ -227,6 +232,9 @@ After execution of command (5) the resulting new json file assembled will be
 placed into `pathFrom` directory and will have the name derived from
 `fromFile` file name: the string being fromFile's name,  
 for ex. using node.js standard module `path`
+
+<!-- markdownlint-configure-file {
+    "MD046": { "style": "consistent" } } -->
 
 ```javascript
 var fromFileName = path.basename(fromFile,'.json');`
@@ -256,12 +264,15 @@ Example:
     npm run pol a fromFile pathFrom assemblyFileName     (6)
 
 Case (6) instead of use automatic outputFile name creation, like in
-the case (5), uses the one set by `assemblyFileName` argument which is the file name without extension '.json'. So taking values used in example for case (5) resulted json file will have full path:
+the case (5), uses the one set by `assemblyFileName` argument which is the  
+file name without extension '.json'. So taking values used in example for
+ case (5) resulted json file will have full path:
 
     outputFile = 'somedisk:\\path\\From\\directory\\' +
                   assemblyFileName + '_modified_n.json' `
 
-The outputFile full path including file name could be set directly by user in the command:
+The outputFile full path including file name could be set directly by user in
+ the command:
 
     npm run pol a fromFile pathFrom outputFile           (7)
 
@@ -273,19 +284,25 @@ npm run pol command :
 
                 (parsFNm - abbreviation of " parameters File Name")
 
-That file containing parameters' data (naming here as params-json-file) should conform the following requirements:
+That file containing parameters' data (naming here as params-json-file) should  
+conform the following requirements:
 
 A. json-file name is terminated by string '_params.json'.  
-The initial part of params-json-file name is passed as an argument in (8) command prompt command, where  
+The initial part of params-json-file name is passed as an argument in (8)  
+command prompt command, where  
 parsFNm - is file name without '_param.json' terminating string.
 
-B. file with such name resides in the folder `'.\\params'` being sub-folder `params` of module's main directory
+B. file with such name resides in the folder `'.\\params'` being sub-folder  
+`params` of module's main directory
 
-For example, if we have parameters file named `'someParameters_params.json'`, relative path of which is `'.\\params\\someParameters_params.json'` , the appropriate command is looked like
+For example, if we have parameters file named `'someParameters_params.json'`,  
+relative path of which is `'.\\params\\someParameters_params.json'` , the  
+appropriate command is looked like
 
     npm run pol someParameters
 
-C. The parameters file residing in `'.\\params'` folder should has content being json string which will be parsed by JSON API into
+C. The parameters file residing in `'.\\params'` folder should has content  
+being json string which will be parsed by JSON API into
 
 ```javascript
 var obj = JSON.parse(jsonStringOfParametersFileContent);
@@ -293,7 +310,7 @@ var obj = JSON.parse(jsonStringOfParametersFileContent);
 
 with appropriate properties named as parameters' variables above
 
-```javascript
+```json
     obj = {
       label: '...',
       act: "..",
@@ -306,27 +323,34 @@ with appropriate properties named as parameters' variables above
     };
 ```
 
-D. depending on the `'e'` or `'a'` - value of action parameter  it's possible to control presence of `prefixTo` or `pathFrom` being set additionally.
+D. depending on the `'e'` or `'a'` - value of action parameter  it's possible  
+to control presence of `prefixTo` or `pathFrom` being set additionally.
 
 Such criteria permit to create not only input params json-file
 but output as well automatically after evoking
-procedure and to store it in the `./params` folder. The name of such file will be `fromFileName_N_params.json` were `fromFileName` is
+procedure and to store it in the `./params` folder. The name of such file will  
+be `fromFileName_N_params.json` were `fromFileName` is
 path.baseName (fromFile,'.json') file name without extension and
 `_N_` is the ordering number of file's version assigned automatically.
 
-Default value of action parameter is  `'ea'` for tests but  if `fromFile` argument is set by user default action parameter is equal to str `'e'`.
+Default value of action parameter is  `'ea'` for tests but  if `fromFile`  
+argument is set by user default action parameter is equal to str `'e'`.
 
 ### <a name='inModuleUse'></a>Usage Inside Module Codes
 
 While `proj-offliner` module has been installed locally or is set as
-property of **dependencies** or **devDependencies** objects of your module's `package.json`, to invoke `proj-offliner` object from your scripts is standard `require` api invocation:
+property of **dependencies** or **devDependencies** objects of your module's  
+`package.json`, to invoke `proj-offliner` object from your scripts is standard  
+`require` api invocation:
 
 ```javascript
 var pol = require('./') ||
           require('./proj-offliner.js');
 ```
 
-proj-offliner object (later - pol) has flexible method `pol.run` supplying full functionality similar to that has been described for __npm run pol ...__  command prompt commands above.
+proj-offliner object (later - pol) has flexible method `pol.run` supplying  
+full functionality similar to that has been described for __npm run pol ...__  
+command prompt commands above.
 
 Keeping meaning of notations mentioned in [command prompt usage](#inComPrompt)
 paragraph the generic call of run method is looked like
@@ -364,7 +388,8 @@ the call of run method would be compact, just like:
 On the other hand all or some necessary parameters could be specified in
 special object `options` passing to run method as argument
 
-```javascript
+```js
+
     var options = {
       label: 'someLabel',
       act: 'someActionMode',
@@ -383,18 +408,26 @@ the call of `pol.run` method could be like this:
     pol.run(options); // typeof options === 'object' should be true
 ```
 
-Another calling option is, instead of `options` object, to pass to `pol.run` method the name of json parameters' file located inside `.\\params'` folder whose json string content would being parsed into analogous parameters object by `JSON.parse(fileContent)`. Such `pol.run` call will be looked like:
+Another calling option is, instead of `options` object, to pass to `pol.run`  
+method the name of json parameters' file located inside `.\\params'` folder  
+whose json string content would being parsed into analogous parameters object  
+by `JSON.parse(fileContent)`. Such `pol.run` call will be looked like:
 
 ```javascript
     pol.run ( pramsJsonFileNameWithoutExtention );  // argument type is {string}
 ```
 
-If you need few consecutive calls of `pol.run` method the `pol.reset(pol)` method should precede each `pol.run(...)` call to exclude overlapping of values for different run, for ex.:
+If you need few consecutive calls of `pol.run` method the `pol.reset(pol)`  
+method should precede each `pol.run(...)` call to exclude overlapping of  
+values for different run, for ex.:
 
     pol.reset(pol);
     pol('runLabel,'e',fromFile);  // call using default prefixTo
 
-Another probably useful method in the situation of consecutive `proj-offliner` runs is  `pol.clone(someLabel);` which instantiates `pol` object permitting to separate namespaces of consecutive `proj-offliner` run and run-methods calls.
+Another probably useful method in the situation of consecutive `proj-offliner`  
+runs is  `pol.clone(someLabel);` which instantiates `pol` object  
+permitting to separate namespaces of consecutive `proj-offliner` run and  
+run-methods calls.
 
 ```javascript
     var polNext = pol.clone('lableOfPolNext');
@@ -405,7 +438,8 @@ Another probably useful method in the situation of consecutive `proj-offliner` r
 memory spaces of `polNex..` objects are not intercepted.  
 (see codes descriptions for details).
 
-The functionality provided by by `pol.run` - method (executes evoking or assembly etc.) depends on the number, the types and the values of method's arguments.
+The functionality provided by by `pol.run` - method (executes evoking or  
+assembly etc.) depends on the number, the types and the values of method's arguments.
 
     /*{string} Variables used in context and their meaning:
     act - action type parameter
@@ -551,7 +585,8 @@ Defaults:
 
 For NON TESTING RUNS Default `act = 'e'`  
 if `fromFile` is not set the default value of `act = 'ea'`  
-(when non `'o'` and non `'f'` cases are run) testing evoking  and then assembling results in
+(when non `'o'` and non `'f'` cases are run) testing evoking  and then  
+assembling results in
 
 ```javascript
 fromFile = __dirname + '\\test\\testProjFile.json';
@@ -562,7 +597,10 @@ pathFrom = __dirname + '\\test\\pathFrom';
 ### Evoking js-files
 
 To extract separate `js-files` of your project from `AppScript` project
-json file downloaded you need to invoke `proj-offliner` package installed locally inside your module using modeling calls for action parameter `'e'` or `'eto'` presenting here. The `pol.run` method is wrapper of engine for evocation
+json file downloaded you need to invoke `proj-offliner` package installed  
+locally inside your module using modeling calls for action  
+parameter `'e'` or `'eto'` presenting here. The `pol.run` method is wrapper  
+of engine for evocation
 
 ```javascript
 pol.evokeJsFiles(label,fromFile,opt_prefixTo,opt_act,opt_mode);
@@ -570,7 +608,9 @@ pol.evokeJsFiles(label,fromFile,opt_prefixTo,opt_act,opt_mode);
 
 ### Remark regarding specified folder for extracted js-files
 
-In the case of when you would prefer to place js-files extracted in specified directory on your choice ( for ex. whose name doesn't contain 6 random characters at the end) the usage is as follows:
+In the case of when you would prefer to place js-files extracted in specified  
+directory on your choice ( for ex. whose name doesn't contain 6 random  
+characters at the end) the usage is as follows:
 
 ```javascript
     var pol = require('./') || require('./proj-offliner.js');
@@ -583,19 +623,28 @@ In the case of when you would prefer to place js-files extracted in specified di
 
 ### Assemble results
 
-After possible edition and/or modification of js-files, extracted previously from project json-file, you could prefer to assemble resulting `AppScript` project json-file for uploading it into your Google project on Google Drive later . The `pol.run` method is the wrapper of the method `assembleProjFile` who is used for that purpose:
+After possible edition and/or modification of js-files, extracted previously  
+from project json-file, you could prefer to assemble resulting `AppScript`  
+project json-file for uploading it into your Google project on Google Drive  
+later . The `pol.run` method is the wrapper of the method `assembleProjFile`  
+who is used for that purpose:
 
 ```javascript
     polO.assembleProjFile(label,opt_fromFile, opt_pathFrom,
                           opt_assFileName, opt_outputFile);
 ```
 
-It returns json string being the content of json file prepared for uploading  and writes new file naming it as  
-or `opt_assFileName`, if it's set  
+It returns json string being the content of json file prepared for uploading  
+and writes new file naming it as  
+or  
+`opt_assFileName`, if it's set  
 or as  
 `originalJsonFileDownloadedNameWithoutExtention~ + "_modified_N.json"`
 
-where **N** after `'modified_'` is string number `= 0,1,2,...` showing the version of assembled file provided in sequential calculation run.  **N** is increased each time by one, to guaranty that `outputFile`-s versions do not overwrite one another into the directory determined by path `opt_pathFrom`
+where **N** after `'modified_'` is string number `= 0,1,2,...` showing the  
+version of assembled file provided in sequential calculation run.  **N** is  
+increased each time by one, to guaranty that `outputFile`-s versions do not  
+overwrite one another into the directory determined by path `opt_pathFrom`
 
 ### Thank you
 
