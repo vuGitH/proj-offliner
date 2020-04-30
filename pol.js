@@ -1,4 +1,5 @@
 /**
+ * @fileoverview
  * module script <pol> determined in package.json property <scripts>
  * Executes evocation or assembly in dependence of the values
  * of action parameters: 'e' - evoke (default) or 'a' - assemble ;

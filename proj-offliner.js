@@ -398,7 +398,9 @@ module.exports = (function(){
    *     file name and extension
    * @return {string} name chosen
    */
-  polO.checkParamsFileName = function(pathTesting){
+  /*
+  polO.checkParamsFileName___ = function(pathTesting){
+
     while( fs.existsSync(pathTesting)){
       pathTesting  = (function (){
         var nm, a, i, iplus;
@@ -407,6 +409,29 @@ module.exports = (function(){
         i = parseInt(a[a.length - 1]);
         iplus = i + 1;
         return nm.replace(/\_\d+$/,'') + "_" + iplus + "_params.json";}());
+    }
+    return pathTesting;
+  };
+  */
+  /**
+   * increases by one digital part of pathname
+   * @param {string} pth path tested
+   * @param {string} strPartFollow string part before wich digit
+   *   is checked and increased by one if any
+   */
+  polO.increasDigitInPath = function(pth, strPartFollow){
+    var nm, a, i, iplus;
+    var patt = new RegExp(strPartFollow);
+    nm = pth.replace(patt,'');
+    a = nm.split('_');
+    i = parseInt(a[a.length - 1]);
+    iplus = i + 1;
+    return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollow;
+  };
+
+  polO.checkParamsFileName = function(pathTesting){
+    while( fs.existsSync(pathTesting)){
+      pathTesting  = polO.increasDigitInPath(pathTesting,"_params.json");
     }
     return pathTesting;
   };
@@ -630,6 +655,14 @@ module.exports = (function(){
     console.log('\n\nBefore cycling over dObj.files[i] properies\n'+
         'pathFrom:\n%s\n',pathFrom);
 
+    function testLoop(){
+      if(polO.log.nFilesAlreadyRead === polO.log.nFilesToRead){
+        clearInterval(polO.loop);
+        polO.myEE.emit('readyWriteOutputFile',label,
+                          dObj, outputFile);
+      }
+    }
+
     for(var i = 0;i < files.length;i++){
       file = files[i];
       fname = file.name;
@@ -663,13 +696,14 @@ module.exports = (function(){
         if(async){
           // launches read integrity checking procedure
           // the necessity of this is rational only for async - mode
-          polO.loop = setInterval( function(){
+          polO.loop = setInterval(testLoop,1000);
+            /*function(){
             if(polO.log.nFilesAlreadyRead === polO.log.nFilesToRead){
               clearInterval(polO.loop);
               polO.myEE.emit('readyWriteOutputFile',label,
                                 dObj, outputFile);
             }
-          },1000);
+          },1000);*/
         }else{
           console.log( '\n\nBefore \'readyWriteOutputFile\' event emit\n'+
               'outputFile =\n%s\n' +
@@ -764,13 +798,7 @@ module.exports = (function(){
    */
   polO.checkAssFileName = function(pathTesting){
     while( fs.existsSync(pathTesting)){
-      pathTesting  = (function (){
-        var nm, a, i, iplus;
-        nm = pathTesting.replace(/\.json/,'');
-        a = nm.split('_');
-        i = parseInt(a[a.length - 1]);
-        iplus = i + 1;
-        return nm.replace(/\_\d+$/,'') + "_" + iplus + ".json";}());
+      pathTesting = polO.increasDigitInPath(pathTesting,".json");
     }
     return pathTesting;
   };
@@ -1082,7 +1110,7 @@ module.exports = (function(){
                   ((options[ipr]) ? options[ipr] : 'empty') +'\n'+
                   'polO.' + ipr + '=' +
                   ((polO[ipr]) ? polO[ipr] :'empty')
-                 );           
+                 );
     }
   };
   /**
@@ -1965,6 +1993,10 @@ module.exports = (function(){
       console.log(label);
       polO.runLauncher( label,tau,'1'); //polO.run('1');
     }
+    fFString = path.join( process.cwd(),
+                         '/params/' + fs.readdirSync(
+                                          path.join(process.cwd(),'./params')).
+                                      filter((fl)=>{return /43/.test(fl);})[0]);
     if(0){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '1_a_fromFile_set_pathFrom_on_prefixTo_sit';
@@ -1978,11 +2010,7 @@ module.exports = (function(){
                                  filter((fl)=>{return /43/.test(fl);})[0]
           )*/ /*).fromFile;*/
       assFN = '1-test_a_fF_pthFrm(pxTo)_assFNm';
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
 
       console.log(label);
       polO.runLauncher( label,tau,act,fF,pthFrm,assFN);
@@ -1991,19 +2019,11 @@ module.exports = (function(){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '2_TEST_fromFile_outF_set_pathFrom_on_prefixTo_sit';
       //fromFile
-      act='a',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='a';
+      fF = require(fFString).fromFile;
       assFN = '2-Test_a_fF_pthFrm(pxTo)_outF';
 
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
       outF = path.join( pthFrm, '/'+assFN+'.json');
       console.log(label);
       polO.runLauncher( label,tau,act,fF,pthFrm,outF);
@@ -2013,18 +2033,10 @@ module.exports = (function(){
       //  test a fF pthFr assFN  - set
       label = '3_a_TEST_fromFile_assFN_set_pathFrom_atSite';
       //fromFile
-      act='a',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='a';
+      fF = require(fFString).fromFile;
       assFN = '3-test_a_fF_pthFrm_assFNm';
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
 
       console.log(label);
       polO.runLauncher( label,tau,act,fF,'',pthFrm,assFN);
@@ -2033,19 +2045,11 @@ module.exports = (function(){
       //  test a fF pthFr(pxTo) outF  - set
       label = '4_TEST_fromFile_outF_set_pathFrom_at_site';
       //fromFile
-      act='a',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='a';
+      fF = require(fFString).fromFile;
       assFN = '4-Test_a_fF_pthFrm_outF';
 
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
       outF = path.join( pthFrm, '/'+assFN+'.json');
       console.log(label);
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
@@ -2055,19 +2059,11 @@ module.exports = (function(){
       //  test a fF pthFr(pxTo) outF  - set
       label = '5_ato_TEST_fromFile_outF_set_pathFrom_at_site';
       //fromFile
-      act='ato',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='ato';
+      fF = require(fFString).fromFile;
       assFN = '5-Test_ato_fF_pthFrm_outF';
 
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
       outF = path.join( pthFrm, '/'+assFN+'.json');
       console.log(label);
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
@@ -2077,19 +2073,11 @@ module.exports = (function(){
       //  test a fF pthFr(pxTo) outF  - set
       label = '6_ato_TEST_fromFile_outF_set_pathFrom_at_pxTo sit';
       //fromFile
-      act='ato',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='ato';
+      fF = require(fFString).fromFile;
       assFN = '6-Test_ato_fF_pthFrm(pxTo)_outF';
 
-      pthFrm = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).pathFrom;
+      pthFrm = require(fFString).pathFrom;
       outF = path.join( pthFrm, '/'+assFN+'.json');
       console.log(label);
       polO.runLauncher( label,tau,act,fF,pthFrm,outF);
