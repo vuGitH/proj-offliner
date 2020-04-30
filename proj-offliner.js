@@ -12,7 +12,7 @@ module.exports = (function(){
   polO.getEventsEmInstance = function (){
     var Events = require('events');
     class EE extends Events{}
-    return new EE;
+    return new EE();
   };
   /**
    * log object to register procedure steps of files' handling
@@ -222,9 +222,9 @@ module.exports = (function(){
     if( mode === 'rf') {
       fs.readFile(fromFile,function(err,data){
         if(err){
-          console.log('Error %s\nhas occurred in evokeObjFromFile listener\n'
-          +' while reading file %s'
-          +'\nmode=%s:',err,fromFile,mode);
+          console.log('Error %s\nhas occurred in evokeObjFromFile listener\n' +
+          ' while reading file %s' +
+          '\nmode=%s:',err,fromFile,mode);
         }else{
           dObj = JSON.parse(data);
         }
@@ -235,7 +235,7 @@ module.exports = (function(){
       console.log('bad mode value');
     }
     polO.myEE.emit('objReady',label,dObj,fromFile,pathTo,act);
-  }
+  };
     /**
    * "objReady" event's listener
    * Checks if dObj has property dObj.files if 'yes' -
@@ -243,12 +243,12 @@ module.exports = (function(){
    * separate files and writes them into pathTo directory
    * evokes scripts from .source properties of dObj.files array
    * elements and writes them in appropriate files within pathTo
-   * @param {string}label identifier of project being handled
-   * @param {Object}dObj - object got from require(fromFile json-file)
-   * @param {string}fromFile absolute path to json - file including name
-   * @param {string}pathTo - folder path where to place scripts' js-files
-   * @param {string}act - actual value of action parameter
-   * @return {void)} creates or rewrites file on drive
+   * @param {string} label identifier of project being handled
+   * @param {Object} dObj - object got from require(fromFile json-file)
+   * @param {string} fromFile absolute path to json - file including name
+   * @param {string} pathTo - folder path where to place scripts' js-files
+   * @param {string} act - actual value of action parameter
+   * @return {void} creates or rewrites file on drive
    */
   polO.evokeScriptsFromObj = function (label,dObj,fromFile,pathTo,act){
     if(!dObj.hasOwnProperty('files')){
@@ -330,7 +330,7 @@ module.exports = (function(){
    */
   polO.setFileExtention = function (fileType){
     return /js\b/.test(fileType) ? 'js' : fileType;
-  }
+  };
   /**
    * writes params - json file into ./params folder
    * @param {string}label identifier of project being handled
@@ -568,9 +568,9 @@ module.exports = (function(){
     if( mode === 'rf') {
       fs.readFile(fromFile,function(err,data){
         if(err){
-          console.log('Error %s\nhas occurred in evokeObjFromFile\n'
-          +' while reading file\n%s\n'
-          +'mode=%s:',err,fromFile,mode);
+          console.log('Error %s\nhas occurred in evokeObjFromFile\n' +
+          ' while reading file\n%s\n' +
+          'mode=%s:',err,fromFile,mode);
         }else{
           dObj = JSON.parse(data);
           polO.myEE.emit('preUploadAssembleFile',label,dObj,
@@ -1003,7 +1003,7 @@ module.exports = (function(){
        */
       if( act === 'a'){
         polO.assFileName = opt_assFileName || polO.assFileName;
-        assFileName = polO.assFileName
+        assFileName = polO.assFileName;
       }
       console.log('inside work before polO.assemblProjFile: \noutputFile = ' + outputFile +
             '\nassFileName = ' + assFileName );
@@ -1038,7 +1038,7 @@ module.exports = (function(){
    *     does exist and present in the ./params  folder
    */
   polO.hasParamsJson = function(arg3){
-    var sep = polO.sep
+    var sep = polO.sep;
     var fpth = __dirname + sep + 'params' + sep + arg3 + '_params.json';
     return  fs.existsSync(fpth) ? fpth : '';
   };
@@ -1063,27 +1063,26 @@ module.exports = (function(){
    * @param {object} options
    */
   polO.ppp = function(options){
-    var prnms = ['act','fromFile','prefixTo','pathTo','pathFrom',
-      'assFileName','outputFile','label'];
+    var prnms = [
+      'act',
+      'fromFile',
+      'prefixTo',
+      'pathTo',
+      'pathFrom',
+      'assFileName',
+      'outputFile',
+      'label'
+    ];
     var ipr;
-    for( var i=0;i<prnms.length;i++){
+
+    for( var i=0; i < prnms.length; i++){
       ipr = prnms[i];
       //console.log('ipr = '+ipr);
       console.log('options.' + ipr + '=' +
-          (function(options){
-            if(options[ipr]){
-              return options[ipr];
-            }else{
-              return 'empty';
-            }}(options))+'\n'+
-      'polO.' + ipr + '=' +
-          (function(options){
-            if(options[ipr]){
-              return options[ipr];
-            }else{
-              return 'empty';
-            }
-          }(polO)));
+                  ((options[ipr]) ? options[ipr] : 'empty') +'\n'+
+                  'polO.' + ipr + '=' +
+                  ((polO[ipr]) ? polO[ipr] :'empty')
+                 );           
     }
   };
   /**
@@ -1228,7 +1227,7 @@ module.exports = (function(){
     console.log('run-method begins -----------------> \n');
     console.log('typeof opt_label =%s',typeof opt_label );
     var label = opt_label || polO.label;
-    console.log('label has been assigned to %s',label)
+    console.log('label has been assigned to %s',label);
     var act,
         fromFile,
         options;  //  donor options object
@@ -1253,7 +1252,7 @@ module.exports = (function(){
 
     }else if( polO.hasParamsJson(opt_act)){
       var missActs=['e','ea','a'];
-      if( opt_fromFile && !(missActs.indexOf(opt_act) < 0) ){
+      if( opt_fromFile && (missActs.indexOf(opt_act) >= 0) ){
         // miss object setting
       }else{
         console.log('Data from params json file  run Case identified');
@@ -1373,14 +1372,14 @@ module.exports = (function(){
       console.log( 'options is an object');
       if(typeof(label) === 'string' && !polO.hasParamsJson(label)){
         console.log('init: options.label = %s label = %s',
-                    options.label,label)
+                    options.label,label);
         options.label = options.label ?
             ( label ? label + '_' + options.label : options.label ) :
             label;
 
         label=options.label;
         console.log('final: options.label = %s label = %s',
-            options.label,label)
+            options.label,label);
       }else{
         label = options.label;
       }
@@ -1392,7 +1391,7 @@ module.exports = (function(){
 
     polO.act = opt_act;
     act = opt_act;
-    fromFile = polO.absPath(opt_fromFile, polO)
+    fromFile = polO.absPath(opt_fromFile, polO);
     if(/\.json$/.test(opt_fromFile)){
       // source json file
       /**
@@ -1733,7 +1732,7 @@ module.exports = (function(){
       return false;
     }
     fnms = require(fromFile).files.
-        map( function(fl){return fl.name} );
+        map( function(fl){return fl.name;} );
     try{
     fList = fs.readdirSync( arg).
         map( function(el){ return el.replace(/\..+$/,'');});
@@ -1750,7 +1749,7 @@ module.exports = (function(){
       }
       return true;
     }());
-    console.log(testV ? 'This is pathFrom' : 'it is NOT pathFrom')
+    console.log(testV ? 'This is pathFrom' : 'it is NOT pathFrom');
     return testV;
 
   };
@@ -1818,13 +1817,15 @@ module.exports = (function(){
   polO.workTest = function(){
     var o, pFN, label,
     tau = 2500, act,
-    fF, pthFr, pthTo, pxTo, assFN, outF ;
+    fFString,
+    fF,
+    pthFr, pthTo, pxTo, assFN, outF ;
 
     if(0){
       //  test (0)
       label = 'TEST all defaults Case (0)';
       console.log(label);
-      polO.runLauncher(label,0)
+      polO.runLauncher(label,0);
     }
     if(0){
       // oooooooooooooooooooooooooo
@@ -1968,12 +1969,14 @@ module.exports = (function(){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '1_a_fromFile_set_pathFrom_on_prefixTo_sit';
       //fromFile
-      act='a',
-      fF = require(
-          path.join(process.cwd(),'/params/'+fs.readdirSync(
-          path.join(process.cwd(),'./params')).
-              filter((fl)=>{return /43/.test(fl)})[0]
-          )).fromFile;
+      act='a';
+      fF = require(fFString).fromFile;
+      /*
+          path.join(process.cwd(),
+                    '/params/' + fs.readdirSync(
+                                     path.join(process.cwd(),'./params')).
+                                 filter((fl)=>{return /43/.test(fl);})[0]
+          )*/ /*).fromFile;*/
       assFN = '1-test_a_fF_pthFrm(pxTo)_assFNm';
       pthFrm = require(
           path.join(process.cwd(),'/params/'+fs.readdirSync(
