@@ -113,8 +113,8 @@
  */
  /**
  * @description of How to determine fourth argument ( with index 3)
- * fileFrom - is params.json file - file in which calculating parameters are values
- * of appropriate properties.
+ * fromFile - is params.json file - file in which calculating parameters are
+ * values of appropriate properties.
  * Criteria:
  * a) last part of json-file name is _params
  * b) file with such name is contained in the folder ./params
@@ -141,7 +141,8 @@ var pol = require('./proj-offliner.js');
 
 var params,
     paramsFile,
-    act;
+    act,
+    label;
 
 if( process.argv.length === 3) {
   paramsFile = pol.hasParamsJson( process.argv[2] );
@@ -152,10 +153,10 @@ if( process.argv.length === 3) {
                  '_params.json');
     params = require( './params/' + process.argv[2] + '_params.json');
     console.log( params );
-    pol.run( params.label ?
-             params.label :
-             'Test run as \'npm run pol ...\' command',
-             process.argv[2]);
+    label = params.label ? params.label :
+             'Test run as \'npm run pol ...\' command';
+    pol.run( label, process.argv[2]);
+    return;
   }else{
     // test depending on act parameter
     act = process.argv[2] || 'ea' ;
