@@ -1,7 +1,3 @@
-<!-- markdownlint-configure-file {
-     } -->
-<!-- markdownlint-configure-file { "MD003": { "style": "atx" } } -->
-
 # proj-offliner package
 
     +----------+    +-----------+    +------------+    +--------------+
@@ -59,7 +55,7 @@ command
 For usage in command prompt commands make proj-offliner main directory being
 the current working directory.
 
-```cmd
+```sh
     cd proj-offlinerMainDirectory
 ```
 
