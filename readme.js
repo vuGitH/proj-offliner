@@ -1,6 +1,6 @@
 // Versions evolution
 /**  
- * v1.3.1 vs v1.3.0 hanged made in reamdme.md file and common 
+ * v1.3.1 vs v1.3.0 changes made in reamdme.md file and common 
  * beautification of other files using VS Code
  * v1.3.0 vs. v1.2.0
  * v1.3.0 new features and modifications in comparison with v1.2.0
