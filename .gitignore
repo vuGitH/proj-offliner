@@ -1,7 +1,8 @@
 .markdownlint.json
 .eslint.json
 .vs_code/
-#.gitignore
+.gitignore
+testMe.js
 
 params/*
 
