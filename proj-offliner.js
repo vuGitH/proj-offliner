@@ -651,7 +651,8 @@ module.exports = (function(){
       return;
     }
     polO.assFN = files.length;
-    var file, fname, fpath;
+    var file, fname, fpath,
+        fExt; // file extention
     console.log('\n\nBefore cycling over dObj.files[i] properies\n'+
         'pathFrom:\n%s\n',pathFrom);
 
@@ -666,7 +667,9 @@ module.exports = (function(){
     for(var i = 0;i < files.length;i++){
       file = files[i];
       fname = file.name;
-      fpath = pathFrom + sp + fname+'.js';
+      fExt = file.type ? polO.setFileExtention(file.type) : 'unknown';
+      fpath = pathFrom + sp + fname + '.' + fExt';
+
       console.log( 'fname=\n%s,\nfpath=\n%s\n',fname,fpath);
       if(fs.existsSync(fpath)){
         polO.log.nFilesToRead++;
