@@ -668,7 +668,7 @@ module.exports = (function(){
       file = files[i];
       fname = file.name;
       fExt = file.type ? polO.setFileExtention(file.type) : 'unknown';
-      fpath = pathFrom + sp + fname + '.' + fExt';
+      fpath = pathFrom + sp + fname + '.' + fExt;
 
       console.log( 'fname=\n%s,\nfpath=\n%s\n',fname,fpath);
       if(fs.existsSync(fpath)){
