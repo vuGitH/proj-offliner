@@ -613,25 +613,25 @@ module.exports = (function(){
   };
   /**
    * "preUploadAssembleFile" event's listener
-   * Checks if dObj has property dObj.files if 'yes' -
-   * in the pathFrom folder reads file by file content  and writes it
-   * into appropriate dObj.files[i].script property of dObj
-   * after that writes dObj stringified by JSON.stringify string
-   * into a copy of original fromFile modifying it's name
-   * collects data from modified appsScript-files and includes it into output
+   * Collects data from modified appsScript-files and includes it into output
    * assemble object then stringifies object and writes json string into output
-   * file.
-
+   * json-file.
+   * Procegure: Checks if dObj has property dObj.files if 'yes' and
+   * this is an Array handles consecutively it' elements-files data  -
+   * in the pathFrom folder reads file data (one by one) and writes it
+   * into appropriate dObj.files[i].source property of dObj.
+   * After that writes dObj stringified by JSON.stringify string
+   * into a copy of original fromFile modifying it's name
    * @param {string} label identifier of project being handled with
-   * @param {Object} dObj - object got from json data
+   * @param {Object} dObj - object got from parsed json fromFile
    * @param {string} fromFile - full path to json file being assembled
-   * @param {string} pathFrom - path to folder where to get data
-   *     appsScript-files from
+   * @param {string} pathFrom - path to folder where modified files of
+   *     appsScript project reside
    * @param {string} opt_outputFile - customer output file path.
    *     Full path including file name with extension.
    *     Optional. If it's not set available fromFile is modified and used
    *     for output writing.
-   * @param {boolean} opt_assync - true if asynchronous mode of file handling
+   * @param {boolean} opt_assync - true if asynchronous mode of files handling
    *     should be used. Default is false.
 
    */
@@ -642,34 +642,39 @@ module.exports = (function(){
       throw 'data object has no property dObj.files';
     }
     var async = opt_assync || false;
-    var sp = polO.sep;
-
+    var sp = polO.sep;  // path string separator used
+    var file,
+        fname,
+        fpath,
+        fExt; // file extention
     var outputFile =
         opt_outputFile ||
         polO.checkAssFileName( fromFile.replace(/\.json/,'_0.json'));
 
     var files = dObj.files;
-    if( !Array.isArray(files) || files.length <= 1){
+    if( !Array.isArray(files) || files.length <= 0){
       console.log( 'files property of dObj is not Array or has no elements');
       return;
     }
+
     polO.assFN = files.length;
-    var file, fname, fpath,
-        fExt; // file extention
+
     console.log('\n\nBefore cycling over dObj.files[i] properies\n'+
         'pathFrom:\n%s\n',pathFrom);
     /**
      * first parameter of setInterval() function
-     * stops loop over files when files count has reached tot number of files
-     * to be read and than
+     * stops loop over files when files count has reached to total number
+     *  of files to be read and than
      * emits 'readyWritOutputFile' event transferring paramenters
-     * to event listener function
+     * to event listener
      */
     function testLoop(){
       if(polO.log.nFilesAlreadyRead === polO.log.nFilesToRead){
         clearInterval(polO.loop);
-        polO.myEE.emit('readyWriteOutputFile',label,
-                          dObj, outputFile);
+        polO.myEE.emit('readyWriteOutputFile',
+                       label,
+                       dObj,
+                       outputFile);
       }
     }
 
