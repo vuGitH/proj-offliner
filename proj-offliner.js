@@ -658,7 +658,13 @@ module.exports = (function(){
         fExt; // file extention
     console.log('\n\nBefore cycling over dObj.files[i] properies\n'+
         'pathFrom:\n%s\n',pathFrom);
-
+    /**
+     * first parameter of setInterval() function
+     * stops loop over files when files count has reached tot number of files
+     * to be read and than
+     * emits 'readyWritOutputFile' event transferring paramenters
+     * to event listener function
+     */
     function testLoop(){
       if(polO.log.nFilesAlreadyRead === polO.log.nFilesToRead){
         clearInterval(polO.loop);
