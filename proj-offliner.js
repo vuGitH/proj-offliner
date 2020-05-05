@@ -273,8 +273,9 @@ module.exports = (function(){
     var file,fName,fScripts,fw,
         fExt; // file's extension
     /**
-     * logs error
-     * @param {Object error} er
+     * logs error. Callback function for fs.writeFile(...) method.
+     * This will get called when write operation completes.
+     * @param {Error} err  JavaScript Error object
      * @return {string}
      */
     function fWriteError(err){
@@ -295,13 +296,13 @@ module.exports = (function(){
         fs.writeFile(fw, fScripts, fWriteError);
       }
       var iti=0;
-      var ti=setInterval(function(){
+      var ti = setInterval(function(){
         if( fs.readdirSync(pathTo).length === files.length ){
           clearInterval(ti);
           console.log('\n\nin placeScriptsTo: timeInterval cleared at' +
                        ' attempt number(iti) =%s',iti);
           // last file handled
-          console.log( 'js-Files Evoked into folder:\n' +  pathTo +'\n');
+          console.log( 'AppsScript\'s-proj Files are evoked into folder:\n' +  pathTo +'\n');
 
           // opens Windows files Explorer for folder with js-files written.
           var childProc = cp.execSync(
@@ -311,14 +312,14 @@ module.exports = (function(){
               '" & exit');
 
           // writes parameters file into ./params folder (synchronously)
-          polO.writeParamsFile(label,fromFile,pathTo,act);
+          polO.writeParamsFile(label, fromFile, pathTo, act);
           //return;
         }else{
           iti++;
         }
-      },1);
+      }, 1);
     }else{
-      console.log('dObj.files is not set or is empty');
+      console.log('dObj.files property is not set or is empty');
     }
   };
   /**
@@ -613,22 +614,24 @@ module.exports = (function(){
   /**
    * "preUploadAssembleFile" event's listener
    * Checks if dObj has property dObj.files if 'yes' -
-   * in the pathFrom folder reads js-file content and writes it
+   * in the pathFrom folder reads file by file content  and writes it
    * into appropriate dObj.files[i].script property of dObj
    * after that writes dObj stringified by JSON.stringify string
    * into a copy of original fromFile modifying it's name
-   * collects data from modified js-files and includes it into output assemble
-   * object then stringifies object and writes json string into output file.
+   * collects data from modified appsScript-files and includes it into output
+   * assemble object then stringifies object and writes json string into output
+   * file.
 
-   * @param {string}label identifier of project being handled with
-   * @param {Object}dObj - object got from json data
-   * @param {string}fromFile - full path to json file being assembled
-   * @param {string}pathFrom - path to folder where to get data js-files from
-   * @param {string}opt_outputFile - customer output file path.
+   * @param {string} label identifier of project being handled with
+   * @param {Object} dObj - object got from json data
+   * @param {string} fromFile - full path to json file being assembled
+   * @param {string} pathFrom - path to folder where to get data
+   *     appsScript-files from
+   * @param {string} opt_outputFile - customer output file path.
    *     Full path including file name with extension.
    *     Optional. If it's not set available fromFile is modified and used
    *     for output writing.
-   * @param {boolean}opt_assync - true if asynchronous mode of file handling
+   * @param {boolean} opt_assync - true if asynchronous mode of file handling
    *     should be used. Default is false.
 
    */
@@ -671,9 +674,10 @@ module.exports = (function(){
       fpath = pathFrom + sp + fname + '.' + fExt;
 
       console.log( 'fname=\n%s,\nfpath=\n%s\n',fname,fpath);
+
       if(fs.existsSync(fpath)){
-        polO.log.nFilesToRead++;
-        polO.log.filesStatus[fpath]='beforeRead';
+        polO.log.nFilesToRead ++;
+        polO.log.filesStatus[fpath] = 'beforeRead';
         if(async){
           /* NEED TO BE done !!!! Not works yet!
           fs.readFile(fpath,'utf8',function(err,data){
@@ -748,9 +752,9 @@ module.exports = (function(){
 
   /**
    * 'readyWriteOutputFile' event listener
-   * @param {object}dObj - final json file data as an object
+   * @param {object} dObj - final json file data as an object
    *     (prepared for serializing )
-   * @param {string}outputFile - full path to final json file
+   * @param {string} outputFile - full path to final json file
    *     including file name with extension.
    */
   polO.writeAssFile = function (label, dObj, outputFile){
@@ -796,7 +800,7 @@ module.exports = (function(){
    * Checks availability of final assemble file name.
    * If presumed one is already  available
    * last digit of the name string increased by one
-   * @param {string}pathTesting
+   * @param {string} pathTesting
    * @return {string} name chosen
    */
   polO.checkAssFileName = function(pathTesting){
