@@ -1,0 +1,162 @@
+# Версия - Тэг - Папка версии
+
+Тэг в Git - брэнч, который больше ни изменяется, т.е. после создания к нему не добавляется новых изменение (commits).
+
+В случае, когда речь идет о некотором состоянии ветки(branch) master, которое соответствует некому состоянию развития проекта, который надо запомнить в неизменяемом в дальнейшем виде (например, объявить новой версией), этот tag и есть сохранение этого состояния (промежуточный "конец истории").
+В случае,если этот tag соответствует новой(последней) версии проекта, он может быть новым релизом проекта с номером(именем) совпадающим с номером(именем) релиза(версиси). 
+
+## Папка версии
+
+**Папка версии** - используется мною, как полная копия проекта на локальном диске в момент обявления этой версии _готовой_.
+Все файлы и под-папки пакета на этой стадии помещаются в отдельную папку. Ей присваивается имя, совпадающее с номером версии, и из этой папки происходит сохранение проекта в 
+
+- в удаленный репозитарий Git, локальный( на том же компьютере/диске, что и проект, либо связь с которым осуществляется через локальную сеть или интернет.
+- в депозитарий npm https://npmjs.com/package/proj-offliner в случае разработки модуля(проекта) node.js.
+- выгружается в архивный файл .gzip | .tar
+
+remark: Following the terminology described bellow (or following the concept of the architecture determined here) there is no strict necessity to upload version's content literrally from the version's directory. Because of the fact, that at the moment of the new version has been ultimately prepared for sharing, the content of root directory (for ex. master branch) and the content of newly created _version's directory_ (version named branch) are similar (excluding previously created versions' folder who are ignored or for commit or for transfer into the new version' folder )
+
+До момента создания новой папки новой версии, работа с файлами проекта происходит в _корневой папке проекта_. _Корневая папка проекта_ - папка, имя которой совпадает с именем проекта; 
+- в случае node.js в этой же папки находится файл package.json.
+- в случае clasp в этой паптке находится .clasp.json
+- в отношении работы над проектом с использованием VCS Git содержимое корневой папки может соответствовать branch `master`. (Чтобы добиться соответствия _корневая папка) - master, _папка версии_ - branch <version>, надо чтобы имя _папки версии_ было включено в файл .gitignore . Либо эта папка должны быть удалена командой git rm -r -- cached <_папка версии_>. Это приводит к тому, что папка сохраняется в working directory, но не отслеживается git (is untracked).
+
+_Корневая папка проекта_ соответствует ветке(branch) - `master` в момент истории, сразу, после только что созданной очередной версии, содержимое _корневой папки проекта_ и _папки версии_ совпадают, а содержимое корневой папки соответствует содержимому ветки(бренча) master.
+
+Последующая работа может быть видоизменениями, добавлениями, исправлениями содержимого master ветки(branch 'master'). Эта работа может ветвиться, т.е. могут создаваться параллельные ветки (branchs), развивающиеся независимо друг от друга, которые также через какое-то время могут сливаться, соединяться. Создание branches необходимо, когда есть потребность именно в параллельных работах, над разными вариантами развивающегося содержимого проекта. Если в параллельности необходимости нет, то развитие может быть последовательным созданием commit-ов ветки master
+
+## Процедура формирования версии
+
+Процедура формирования очередной версии (`git - node` среда):
+
+`Node`(npm) требует версию из соответствующей _папки версии_ или ссылку на git repo верcии
+`Git` позволяет формировать версию,  как отдельный tag, подобно commit-у, определяющийся в истории фиксированной SHA1 - "точкой",  полученный из ветки master (master branch) на определенный момент истории пакета.
+
+### Создание версии и tag
+
+Создаем commit -> tag:  git tag -a <version-tagName>.
+
+Создаем промежуточный remote "server" в виде локальной директории
+
+    /* пустой репозитарий */
+    /* или */
+
+    mkdir <repo-dir>
+    cd <repo-dir>
+    git init --bare
+
+    /* или *.*
+
+    git init --bare <path/to/repo-dir.git> // repo-dir.git - or doesn't exist, i.e new, or is empty
+
+
+
+
+    cd <maindir>
+    - option 1
+
+            git commit -m "version set"  // print commit-SHA1
+            git tag -a <version-tag> <commit-SHA1>
+
+            или
+
+    - option 2
+            git tag -a <version-tag>
+
+### Oпределение удаленного репозитария  и загрузка в него версии
+
+репозитарий может быть локальным или сетевым(с URL)
+
+    git remote add -u origin <repo-dir>
+    git push origin <version-tag>
+
+where <repo-dir> - link to git repo or path to the local repository's directory  
+<version-tan> - tag name
+
+### Создание _папки версии_
+
+создание _папки версии_ выгрузкой в нее из удаленного репо тэга версии (мгновенный слепок роекта). Из этой папки _папка версии_ будет выгружться в node депозитарий (register).
+
+если репо еще не существует
+
+    git remote add -u origin <repo-dir>
+    git push origin <version-tag>
+
+если же tag заливается в уже существующий remote origin:
+
+    git push origin <version-tag>
+
+Закидываем этот тэг на удаленный репозитарий 
+    
+    git push origin <version-tag>
+
+Если бы последняя операция проводилась с внешним git репозитарием, то
+его уже можно было указывать при публикации новой версии проекта node.js project
+
+    npm publish <source> --tag <version-tag> --access public
+
+Если публикация новой версии пакета производится из _папки версии_ , то команда
+
+    npm publish
+
+в этом случае номер версии берется из package.json
+
+
+
+## message of tag v1.3.1 for proj-offliner module
+
+This tag represents v1.3.1 of proj-offliner project. Wich is a modification
+of previous version 1.3.0 obtained after script linting and 
+amendment of possibility to follow file.type property to determine extention
+for each file evoked from json file downloaded from Apps Script project.
+
+This tag has been created to test procedure:
+
+create tag -> push to local repo ->
+clone into specified version's directory ->
+publish new version of node.js package on public npm registry
+Read detailed description in doc_version-tag-version_folder.txt file
+
+
+1. to create tag
+2. to push this particular  tag to local remote repo (located in ..\..\..\repo-pol.git)
+3. to clone newly uploaded tag into special separate directory proj-offliner\v1.3.1
+by means of
+
+    git clone --local -b <tag> <local repo-dir>  <new dir for version>
+
+если эту команду выполнять из папки */proj-offliner  команда будет выглядеть
+
+    git clone -l -b v1.3.1 ../../repo-pol.git ./v1.3.1
+
+если выполнять ее не выходя из папки */proj-offliner/1.3.1
+
+    git clone --local --branch v1.3.1 ../../../repo-pol.git ../v1.3.1
+        
+4. use this newly created special directory as a directory from which new releas of node.js project is publishing by means of
+
+
+    cd v1.3.1
+    npm publish ./ --tag v1.3.1 --access public --dry-run   /* to test */
+
+ATTENTION !!!!! --tag v1.3.1.  - is an ERROR 
+Need to elaborate this parameter assign <dist-tag> tag mast not has semver name
+Check everithing. Without --tag v1.3.1 it's working.
+Command variant is
+    npm publish ./ --access public --dry-run 
+
+Next problem: 
+ToDO: it's necessary to analize content of 'params' and 'test' directories to leave
+only content needs for test. There are a lot of extra garbage!!!!!
+
+Make changes in appropriate .gitignore and .npmignore
+.eslintrc.json file is development dependency
+
+
+    or if everything looks good:
+
+    npm publish ./ (--tag v1.3.1)?????? --access public
+
+
+
+
