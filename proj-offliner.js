@@ -1031,7 +1031,7 @@ module.exports = (function(){
       polO.outputFile = opt_outputFile || polO.outputFile;
       outputFile = polO.outputFile;
       /**
-       * @descrition
+       * @description
        * final assembly json file is located
        * 1. or in the same directory where original fromFile lives
        * and has modified name fromFile_modified_n where n=0,1,...
@@ -1350,7 +1350,7 @@ module.exports = (function(){
         }
       }else{
         // possible scenarios
-        // - pass parameters though pol object's properties
+        // - pass parameters through pol object's properties
         // - all default case or
         // - standard case with testing act
 
