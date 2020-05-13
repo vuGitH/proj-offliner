@@ -477,7 +477,7 @@ module.exports = (function(){
 
   /**
    * 'assembleFileRedy' event emitter
-   * Assembles scripts content of js-files modified into json file
+   * Assembles scripts content of AS-files modified into json file
    * prepared to uploading it to Google appScript project.
    * @param {string}label identifier of project being handled
    * @param {string}opt_fromFile  (originalJsonFileDownloaded) full file path of
@@ -525,7 +525,7 @@ module.exports = (function(){
         label);
     // outputFile - user predefined full path of output file
     var outputFile = opt_outputFile || polO.outputFile;
-
+    var pathFrom;
     var fromFile =  opt_fromFile || polO.fromFile || "";
     polO.fromFile = fromFile;
     if(!fromFile){
@@ -535,8 +535,13 @@ module.exports = (function(){
 
     var oFP, outFileName, outPath, fromFileCopy,
         sp = polO.sep;
-    if( !outputFile){
-      oFP = polO.separatePathAndFileName(fromFile);
+        
+    oFP = polO.separatePathAndFileName(fromFile);
+    pathFrom = opt_pathFrom ?
+              opt_pathFrom :
+              (polO.pathFrom ? polO.pathFrom : oFP.path);
+        
+    if( !outputFile){      
 
       outFileName  = ( function(){
           if(opt_assFileName){
@@ -551,16 +556,15 @@ module.exports = (function(){
             return oFP.fnm.replace(/\.json$/,'')+'_modified.json';
           }
       }());
-      outPath = opt_pathFrom ?
-                opt_pathFrom :
-                (polO.pathFrom ? polO.pathFrom : oFP.path);
+      
+      outPath = pathFrom;
       polO.preparePath(outPath);
       fromFileCopy = !outFileName ?
                    opt_assFileName : outPath + sp + outFileName;
     }else{
       outPath = path.dirname(outputFile);
-        polO.preparePath(outPath);
-        fromFileCopy = outputFile;
+      polO.preparePath(outPath);
+      fromFileCopy = outputFile;
     }
     fs.copyFile(fromFile, fromFileCopy, function(err){
       if(err){
@@ -569,11 +573,13 @@ module.exports = (function(){
       // emits assembleFileReady event
       console.log('\n\nBefore assembleFileReady event emit \n' +
           'outPath=\n%s\n'+
+          'pathFrom=\n%s\n' +
           'fromFileCopy=\n%s',
           outPath,
+          pathFrom,
           outputFile);
       polO.myEE.emit('assembleFileReady',label, fromFileCopy,
-                     outPath, outputFile,'req');
+                     pathFrom, outputFile,'req');
     });
   };
   /**
