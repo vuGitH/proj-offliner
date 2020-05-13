@@ -819,12 +819,18 @@ module.exports = (function(){
    * Checks availability of final assemble file name.
    * If presumed one is already  available
    * last digit of the name string increased by one
+   * Nothing is changed if file name has no digital part before .json
+   * extension
    * @param {string} pathTesting
    * @return {string} name chosen
    */
   polO.checkAssFileName = function(pathTesting){
+    var tempNm = pathTesting;
     while( fs.existsSync(pathTesting)){
       pathTesting = polO.increasDigitInPath(pathTesting,".json");
+      if(tempNm === pathTesting){
+        break;
+      }
     }
     return pathTesting;
   };
@@ -1038,6 +1044,8 @@ module.exports = (function(){
       pathFrom = opt_pathFrom || opt_prefixTo || polO.pathFrom ;
       polO.outputFile = opt_outputFile || polO.outputFile;
       outputFile = polO.outputFile;
+      outputFile = polO.checkAssFileName(outputFile);
+      polO.outputFile = outputFile;
       /**
        * @description
        * final assembly json file is located
@@ -1658,8 +1666,8 @@ module.exports = (function(){
    * @return {string} value of outputFile
    */
   polO.getOutputFile = function(
-      optAct,optFromFile,optPrefixTo,optPathFrom,
-      optAssFileName,optOutputFile,pol){
+      optAct, optFromFile, optPrefixTo, optPathFrom,
+      optAssFileName, optOutputFile,pol){
     var act = optAct,
         fromFile = optFromFile,
         prefixTo = optPrefixTo,
