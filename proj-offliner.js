@@ -416,16 +416,24 @@ module.exports = (function(){
   */
   /**
    * increases by one digital part of pathname
+   * if the part of file name before extention and
+   * after last underscore is not digital
+   * nothing is changed and original file name will be returned
    * @param {string} pth path tested
    * @param {string} strPartFollow string part before wich digit
    *   is checked and increased by one if any
    */
   polO.increasDigitInPath = function(pth, strPartFollow){
-    var nm, a, i, iplus;
+    var nm, a, lastPrt, i, iplus;
+    var digsPtt = /[0-9]+/;
     var patt = new RegExp(strPartFollow);
     nm = pth.replace(patt,'');
     a = nm.split('_');
-    i = parseInt(a[a.length - 1]);
+    lastPrt = a[a.length - 1];
+    if(!digsPtt.test(lastPrt)){
+      return pth;
+    }
+    i = parseInt(lastPrt);
     iplus = i + 1;
     return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollow;
   };
