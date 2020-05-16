@@ -1,3 +1,12 @@
+/**
+ * @fileoverview
+ * module proj-offlener - splits single AppsScript project's json file
+ * donloaded from Google Drive into few files from which the project
+ * consists of for modifying and editing these files locally
+ * This banch of files will be named bellow as 'asp-filess' or 'asp-filess'
+ * derived from the assignment Apps Script project files
+ * independently of their real extention which could be .js|.html|.json
+ */
 var fs = require('fs');
 var cp = require('child_process');
 var path = require('path');
@@ -27,6 +36,7 @@ module.exports = (function(){
   polO.log.nFilesAlreadyRead = 0;
   polO.log.nFilesToRead = 0;
   polO.log.filesStatus = {};
+  polO.log.nOutFilesFixed = 0;
   polO.myEE = polO.getEventsEmInstance();
 
   //  polO modification
@@ -67,7 +77,7 @@ module.exports = (function(){
    * comprising of path to file's host folder and file name without extension
    * which could be used or as pathTo directory during js - files extraction
    * from json file or for new file path at assembling new json file
-   * @param {string}fp - full path to json file including file name
+   * @param {string} fp - full path to json file including file name
    * @return {string} path to subdirectory named as fileName without
    * extension
    */
@@ -91,20 +101,22 @@ module.exports = (function(){
    * creates new subdirectory(-ies) if path contains nonexistent ones
    * @param {string}pth of directory (probably nonexistent)
    */
-  polO.preparePath=function(pth){
+  polO.preparePath = function(pth){
+    var sub, dnm;
     if( !fs.existsSync(pth) ){
-      var sub = pth.split(path.sep);
+      sub = pth.split(path.sep);
       sub.forEach( function(el,j,su){
-        var dnm = su.slice(0,j+1).join(path.sep);
+        dnm = su.slice(0,j+1).join(path.sep);
         if( !fs.existsSync( dnm ) ){
           fs.mkdirSync( dnm );
         }
       });
     }
   };
-  // ----- EVOKE JS - FILES ---------
+  // ----- EVOKE ASP-FILES ---------
   /**
-   * 'toFolderReady' event emitter/
+   *
+   * 'toFolderReady' event emitter
    * Sets temporary folder where to place temporary data.
    * Folder path is determined by adding six random characters to prefixTo path.
    * !!It is possible to set fixed path of destination folder on user choice
@@ -112,22 +124,24 @@ module.exports = (function(){
    * @param {string}label - identifier of project being handled
    * @param {string}fromFile - full path to json file from which sources data
    *   are extracted
-   * @param {string}prefixTo - string representing a part of a full path
+   * @param {string}opt_prefixTo - string representing a part of a full path
    *   to which six random characters will be added to form path to new
    *   directory to be created. This path is passed to callback function
    *   of fs.mkdtemp() as second parameter and appropriate directory
    *   will be created.
+   * @param {string} opt_act actual value of action parameter. Optional
+   * @param {string} opt_mode
    * @return {string} path to destination folder
    *   if full path to newly created directory would have been determined
    *   the polO.pathTo will have been set and event 'toFolderReady' will be
    *   fired,  otherwise
    *   polO.pathTo === undefined without appropriate event emitting
    */
-  polO.evokeJsFiles = function(label,fromFile,opt_prefixTo,opt_act,opt_mode){
+  polO.evokeAspFiles = function(label,fromFile,opt_prefixTo,opt_act,opt_mode){
     var act = opt_act || polO.act || 'unknown act';
     var mode = opt_mode||'req';
     // output folders
-    console.log('\n\ninside evokeJsFiles begins with parameters:' +
+    console.log('\n\ninside evokeAspFiles begins with parameters:' +
                 '\n  >----------<\n' +
                 'fromFile=\n' +fromFile+ '\n' +
                 'opt_prefixTo=\n' + opt_prefixTo +'\n' +
@@ -143,7 +157,7 @@ module.exports = (function(){
      * - if polO.prefixTo is not set, file name of fromFile without
      * extension is used as prefixTo and the directory with name
      * <prefixTo>XXXXXX will be created inside host folder of fromFile and
-     * will be assigned as pathTo for js-files being going to be extracted
+     * will be assigned as pathTo for asp-filess being going to be extracted
      * will have been placed there.
      * XXXXXX - 6 random alphanumerical characters
      * - in the case when it's necessary to use some path specified as pathTo
@@ -188,7 +202,7 @@ module.exports = (function(){
       throw 'Logical error. polO.prefixTo should be determined here.';
     }
     // prefixTo is set
-    polO.pathTo=''; // from this point this parameter is not needed
+    polO.pathTo = ''; // from this point this parameter is not needed
     fs.mkdtemp(prefixTo,function(err,pathTo){
       if(err){
         console.log(
@@ -202,23 +216,26 @@ module.exports = (function(){
   };
   /**
    * 'toFolderReady' event listener
-   * by means of node.js fs module reads input json - file from drive and
+   * by means of node.js fs module reads input json-file from drive and
    * transforms  it's content into an object then
    * emits custom event 'objReady' to chain next calculation
-   * with parameters for callback function: dObj,pathTo
-   * @param {string}label identifier of the project being handled
-   * @param {string}fromFile absolute path to json - file including name
-   * @param {string}pathTo absolute path to folder where to place results
+   * with parameters for callback function:
+   * label, dObj, fromFile, pathTo, act
+   * @param {string} label identifier of the project being handled
+   * @param {string} fromFile absolute path to json - file including name
+   * @param {string} pathTo absolute path to folder where to place results
+   * @param {string} act- actual value of action parameter
    * @param {string}opt_mode - method's mode:
    *   "req" default - gets json file with Google appScript project codes
    *      and returns appropriate object by means of node require() function
-   *   "rf" - gets object by parsing data preliminary read by fs.readFile object
-   * @return {Object|void} JSON.parse(json - data)object or void in the case
-   *   of js - project scripts
+   *   "rf" - gets object by parsing data preliminary read by
+   *          fs.readFile object
+   * @return {Object|void} JSON.parse(json-data) object or void in the case
+   *   of js-project scripts
    */
-  polO.evokeObjFromFile = function (label, fromFile,pathTo,act, opt_mode){
+  polO.evokeObjFromFile = function (label, fromFile, pathTo, act, opt_mode){
     var mode = opt_mode || 'req';
-    var dObj;
+    var dObj, d_out; 
     if( mode === 'rf') {
       fs.readFile(fromFile,function(err,data){
         if(err){
@@ -227,50 +244,58 @@ module.exports = (function(){
           '\nmode=%s:',err,fromFile,mode);
         }else{
           dObj = JSON.parse(data);
+          polO.dObjOut = JSON.parse(data);
+          polO.myEE.emit('objReady', label, dObj, fromFile, pathTo, act);
         }
       });
     }else if(mode === 'req'){
       dObj = require(fromFile);
+      
+      if( /a/.test(act)) {
+        d_out = JSON.stringify(dObj);
+        polO.dObjOut = JSON.parse(d_out);
+      }
+      polO.myEE.emit('objReady',label,dObj,fromFile,pathTo,act);
+      
     }else{
       console.log('bad mode value');
-    }
-    polO.myEE.emit('objReady',label,dObj,fromFile,pathTo,act);
+      throw 'bad mode value';    
+    }    
   };
     /**
    * "objReady" event's listener
    * Checks if dObj has property dObj.files if 'yes' -
-   * copy files scripts(files[i].source) content into
+   * copy files scripts' - files[i].source - content into
    * separate files and writes them into pathTo directory
    * evokes scripts from .source properties of dObj.files array
    * elements and writes them in appropriate files within pathTo
    * @param {string} label identifier of project being handled
    * @param {Object} dObj - object got from require(fromFile json-file)
    * @param {string} fromFile absolute path to json - file including name
-   * @param {string} pathTo - folder path where to place scripts' js-files
+   * @param {string} pathTo - folder path where to place scripts' asp-filess
    * @param {string} act - actual value of action parameter
    * @return {void} creates or rewrites file on drive
    */
-  polO.evokeScriptsFromObj = function (label,dObj,fromFile,pathTo,act){
-    if(!dObj.hasOwnProperty('files')){
-      throw 'object has no property dObj.files';
-    }else if(!dObj){
+  polO.evokeScriptsFromObj = function (label, dObj, fromFile, pathTo, act){
+    
+    if(!dObj){
       throw( 'dObj parameter is undefined or null');
+    }else if(!(dObj.hasOwnProperty('files') || !Array.isArray(dObj.files))){
+      console.log('object has no dObj.files property or this\n' +
+                  'property is not an Array!');
+      return;
     }
+    
     console.log(
         '\n\nInside polO.evokeScriptsFromObj: Temporary folder is ready:' +
         '\n%s\n'+
         'Data object received. String length= %s',
         pathTo,
         JSON.stringify(dObj).length );
-    if(!(dObj.hasOwnProperty('files') || !Array.isArray(dObj.files))){
-      console.log('object has no dObj.files property or this\n' +
-                  'property is not an Array!');
-      return;
-    }
 
     var sep = polO.sep;
     var files = (dObj.hasOwnProperty('files')) ? dObj.files:[];
-    var file,fName,fScripts,fw,
+    var file,fName,fScript,fw,
         fExt; // file's extension
     /**
      * logs error. Callback function for fs.writeFile(...) method.
@@ -291,34 +316,35 @@ module.exports = (function(){
         file = files[i];           // each file is an object
         fName = file.name;
         fExt = file.type ? polO.setFileExtention(file.type) : 'unknown';
-        fScripts = file.source;    // javaScript codes
+        fScript = file.source;    // javaScript codes
         fw = pathTo + sep + fName + "." + fExt;
-        fs.writeFile(fw, fScripts, fWriteError);
+        
+        fs.writeFile(fw, fScript, fWriteError);
       }
       var iti=0;
       var ti = setInterval(function(){
-        if( fs.readdirSync(pathTo).length === files.length ){
-          clearInterval(ti);
-          console.log('\n\nin placeScriptsTo: timeInterval cleared at' +
-                       ' attempt number(iti) =%s',iti);
-          // last file handled
-          console.log( 'AppsScript\'s-proj Files are evoked into folder:\n' +  pathTo +'\n');
+          if( fs.readdirSync(pathTo).length === files.length ){
+            clearInterval(ti);
+            console.log('\n\nin placeScriptsTo: timeInterval cleared at' +
+                         ' attempt number(iti) =%s',iti);
+            // last file handled
+            console.log( 'AppsScript\'s-proj Files are evoked into folder:\n' +  pathTo +'\n');
 
-          // opens Windows files Explorer for folder with js-files written.
-          var childProc = cp.execSync(
-              'start explorer.exe ' +
-              '"' +
-              pathTo+
-              '" & exit');
+            // opens Windows files Explorer for folder with asp-filess written.
+            var childProc = cp.execSync(
+                'start explorer.exe ' +
+                '"' +
+                pathTo+
+                '" & exit');
 
-          // writes parameters file into ./params folder (synchronously)
-          polO.writeParamsFile(label, fromFile, pathTo, act);
-          //return;
-        }else{
-          iti++;
-        }
-      }, 1);
-    }else{
+            // writes parameters file into ./params folder (synchronously)
+            polO.writeParamsFile(label, fromFile, pathTo, act);
+            //return;
+          }else{
+            iti++;
+          }
+        }, 1);
+     }else{
       console.log('dObj.files property is not set or is empty');
     }
   };
@@ -335,9 +361,9 @@ module.exports = (function(){
   /**
    * writes params - json file into ./params folder
    * @param {string}label identifier of project being handled
-   * @param {string}fromFile - folder with js-files. Should be renamed as pathFrom
+   * @param {string}fromFile - folder with asp-filess. Should be renamed as pathFrom
    * @param {string}pathTo - directory path
-   * @param {string}opt_pathFrom - path of directory from which js-files should
+   * @param {string}opt_pathFrom - path of directory from which asp-filess should
    *     be taken for assembling output json file
    * @param {string}opt_act - actual value of action parameter
    * @param {string}opt_prefixTo - prefix used to create pathTo if any
@@ -345,8 +371,8 @@ module.exports = (function(){
    * @param {string}opt_outputFile
    * @return {string} params-file path
    */
-  polO.writeParamsFile=function(label,fromFile, pathTo, opt_act, opt_pathFrom,
-                                    opt_prefixTo, opt_assFileName,
+  polO.writeParamsFile = function(label,fromFile, pathTo, opt_act,
+                                  opt_pathFrom, opt_prefixTo, opt_assFileName,
                                    opt_outputFile){
     var act = opt_act || polO.act || '';
     var prefixTo = opt_prefixTo || '';
@@ -377,7 +403,7 @@ module.exports = (function(){
               fpth);
       polO.myEE.emit('endpoint-e',label, fromFile,pathTo,act);
     }else{
-      console.log('\n\nin writeParamsFile writes params-file asynchronously\n\n');
+      console.log('\n\nin writeParamsFile: writes params-file asynchronously\n\n');
       fs.writeFile(fpth, data,'utf-8',function(err){
         if(err){
           console.log('error occured while writitng params-file :\n%s',err);
@@ -393,7 +419,7 @@ module.exports = (function(){
   };
   /**
    * Checks availability of final params file name.
-   * If the one being presumed is already  available
+   * If the one being presummed is already  available
    * the digit preceded '_params.json' part will be increased by one
    * @param {string}pathTesting - full path of params-file testing including
    *     file name and extension
@@ -446,11 +472,11 @@ module.exports = (function(){
   };
    /**
     * 'endpoint-e' event listener (evoke)
-    * @param{string}label identifier of project being handled
-    * @param {string}pathTo path to the directory where js-files have been
+    * @param{string} label identifier of project being handled
+    * @param {string} pathTo path to the directory where asp-filess have been
     *     located.
-    * @param {string}fromFile - original json-file
-    * @param {string}act - actual value of act parameter
+    * @param {string} fromFile - original json-file
+    * @param {string} act - actual value of act parameter
     */
   polO.eEndpoint = function (label,fromFile,pathTo, act){
     var pathFrom;
@@ -477,13 +503,13 @@ module.exports = (function(){
 
   /**
    * 'assembleFileRedy' event emitter
-   * Assembles scripts content of AS-files modified into json file
+   * Assembles scripts content of asp-filess modified into json file
    * prepared to uploading it to Google appScript project.
    * @param {string}label identifier of project being handled
    * @param {string}opt_fromFile  (originalJsonFileDownloaded) full file path of
    *    original Google project json file downloaded from GoogleDrive
    * @param {string}opt_pathFrom path to the destination folder for output
-   *     json file. This is the same folder where js-files modified,
+   *     json file. This is the same folder where asp-filess modified,
    *     obtain from original json file, are placed earlier and appropriately
    *     are taken from.
    * @param {string}opt_assFileName output json file name to be written.
@@ -535,13 +561,13 @@ module.exports = (function(){
 
     var oFP, outFileName, outPath, fromFileCopy,
         sp = polO.sep;
-        
+
     oFP = polO.separatePathAndFileName(fromFile);
     pathFrom = opt_pathFrom ?
               opt_pathFrom :
               (polO.pathFrom ? polO.pathFrom : oFP.path);
-        
-    if( !outputFile){      
+
+    if( !outputFile){
 
       outFileName  = ( function(){
           if(opt_assFileName){
@@ -556,7 +582,7 @@ module.exports = (function(){
             return oFP.fnm.replace(/\.json$/,'')+'_modified.json';
           }
       }());
-      
+
       outPath = pathFrom;
       polO.preparePath(outPath);
       fromFileCopy = !outFileName ?
@@ -587,15 +613,14 @@ module.exports = (function(){
    * by means of fs module reads input json-file from drive and
    * transforms  it's content into an object then
    * emits custom event 'preUploadAssembleFile' to chain next calculations:
-   * the content of dObj.files[i].script properties will be exchanged by
-   * scripts of modified js-files locating in pathFrom directory.
-   * parameters for callback function: dObj,fromFile,pathFrom
-   * @param {string}label identifier of project being handled
-   * @param {string}fromFile absolute path to json - file including name
-   * @param {string}pathFrom absolute path to where js-files already
+   * the content of dObj.files[i].source properties will be exchanged by
+   * scripts of asp-filess preliminary modified locating in pathFrom directory.
+   * @param {string} label identifier of project being handled
+   * @param {string} fromFile absolute path to json - file including name
+   * @param {string} pathFrom absolute path to where asp-filess already
    *     modified are stored.
-   * @param {string}opt_outputFile -
-   * @param {string}opt_mode - method's mode:
+   * @param {string} opt_outputFile -
+   * @param {string} opt_mode - method's mode:
    *   "req" default - gets json file with Google appScript project codes
    *    and returns appropriate object by means of node require() function
    *   "rf" - gets object by parsing data preliminary read by fs.readFile
@@ -605,24 +630,26 @@ module.exports = (function(){
                                        pathFrom,opt_outputFile,opt_mode){
     var mode = opt_mode || "req";
     var dObj;
+
     if( mode === 'rf') {
       fs.readFile(fromFile,function(err,data){
         if(err){
           console.log('Error %s\nhas occurred in evokeObjFromFile\n' +
           ' while reading file\n%s\n' +
-          'mode=%s:',err,fromFile,mode);
+          'mode=%s:', err, fromFile, mode);
         }else{
           dObj = JSON.parse(data);
-          polO.myEE.emit('preUploadAssembleFile',label,dObj,
-                         fromFile,pathFrom,opt_outputFile);
+          polO.myEE.emit('preUploadAssembleFile', label, dObj,
+                         fromFile, pathFrom, opt_outputFile);
         }
       });
     }else if(mode === 'req'){
       dObj = require(fromFile);
-      polO.myEE.emit('preUploadAssembleFile',label,dObj,
-                     fromFile, pathFrom,opt_outputFile);
+      polO.myEE.emit('preUploadAssembleFile', label, dObj,
+                     fromFile, pathFrom, opt_outputFile);
     }else{
       console.log('bad mode value');
+      throw 'evokeObjFromAssFile: bad mode value';
     }
   };
   /**
@@ -631,8 +658,81 @@ module.exports = (function(){
    * assemble object then stringifies object and writes json string into output
    * json-file.
    * Procegure: Checks if dObj has property dObj.files if 'yes' and
-   * this is an Array handles consecutively it' elements-files data  -
+   * this is an Array handles consecutively it's elements-files data  -
    * in the pathFrom folder reads file data (one by one) and writes it
+   * into appropriate dObj.files[i].source property of dObj.
+   * After that writes dObj stringified by JSON.stringify string
+   * into a copy of original fromFile modifying it's name
+   * @param {string} label identifier of project being handled with
+   * @param {Object} dObj - object got from parsed json fromFile
+   * @param {string} fromFile - full path to json file being assembled
+   * @param {string} pathFrom - path to folder where modified files of
+   *     appsScript project reside
+   * @param {string} opt_outputFile - customer output file path.
+   *     Full path including file name with extension.
+   *     Optional. If it's not set available fromFile is modified and used
+   *     for output writing.
+   */
+  polO.preUploadFile = function (label, dObj, fromFile, pathFrom,
+                                 opt_outputFile){
+
+    if(!dObj.hasOwnProperty('files')){
+      throw 'data object has no property dObj.files';
+    }
+    var sp = polO.sep;  // path string separator used
+    var file,
+        fname,
+        fpath,
+        fExt; // file extention
+    var outputFile =
+        opt_outputFile ||
+        polO.checkAssFileName( fromFile.replace(/\.json/,'_0.json'));
+
+    var files = dObj.files;
+    if( !Array.isArray(files) || files.length <= 0){
+      console.log( 'files property of dObj is not Array or has no elements');
+      return;
+    }
+    polO.assFN = files.length;
+
+    console.log('\n\nBefore cycling over dObj.files[i] properies\n'+
+        'pathFrom:\n%s\n',pathFrom);
+
+    for(var i = 0;i < files.length;i++){
+      file = files[i];
+      fname = file.name;
+      fExt = file.type ? polO.setFileExtention(file.type) : 'unknown';
+      fpath = pathFrom + sp + fname + '.' + fExt;
+
+      console.log( 'fname=\n%s,\nfpath=\n%s\n',fname,fpath);
+
+      if(fs.existsSync(fpath)){
+        polO.log.nFilesToRead ++;
+        polO.log.filesStatus[fpath] = 'beforeRead';
+        file.source = fs.readFileSync(fpath,'utf8');
+        polO.log.filesStatus[fpath]='written';
+
+        polO.log.nFilesAlreadyRead++;
+      }else{
+        console.log('\nAttention!! File \n%s\n does not exist.',fpath);
+      }
+    }
+    console.log( '\n\nBefore \'readyWriteOutputFile\' event emit\n'+
+                 'outputFile =\n%s\n' +
+                 'label = %s\n',outputFile, label);
+    polO.myEE.emit('readyWriteOutputFile',label, dObj, outputFile);
+  };
+    /**
+   * "preUploadAssembleFileAsync" event's listener
+   * Collects data from modified appsScript-files and includes it into output
+   * assemble object then stringifies object and writes json string into output
+   * json-file.
+   * Procegure:
+   * Checks if dObj has property dObj.files
+   * if 'yes' and this is an Array
+   * handles consecutively it's elements-files data:
+   * in the pathFrom folder reads file data (one by one)
+   * asyncronously and writes it
    * into appropriate dObj.files[i].source property of dObj.
    * After that writes dObj stringified by JSON.stringify string
    * into a copy of original fromFile modifying it's name
@@ -649,13 +749,13 @@ module.exports = (function(){
    *     should be used. Default is false.
 
    */
-  polO.preUploadFile = function (label, dObj, fromFile, pathFrom,
-                         opt_outputFile, opt_assync){
+  polO.preUploadFileAsync = function (label, dObj, fromFile, pathFrom,
+                         opt_outputFile){
 
     if(!dObj.hasOwnProperty('files')){
       throw 'data object has no property dObj.files';
     }
-    var async = opt_assync || false;
+
     var sp = polO.sep;  // path string separator used
     var file,
         fname,
@@ -668,6 +768,7 @@ module.exports = (function(){
     var files = dObj.files;
     if( !Array.isArray(files) || files.length <= 0){
       console.log( 'files property of dObj is not Array or has no elements');
+      throw 'files property of dObj is not Array or has no elements';
       return;
     }
 
@@ -703,6 +804,7 @@ module.exports = (function(){
       if(fs.existsSync(fpath)){
         polO.log.nFilesToRead ++;
         polO.log.filesStatus[fpath] = 'beforeRead';
+
         if(async){
           /* NEED TO BE done !!!! Not works yet!
           fs.readFile(fpath,'utf8',function(err,data){
@@ -729,13 +831,7 @@ module.exports = (function(){
           // launches read integrity checking procedure
           // the necessity of this is rational only for async - mode
           polO.loop = setInterval(testLoop,1000);
-            /*function(){
-            if(polO.log.nFilesAlreadyRead === polO.log.nFilesToRead){
-              clearInterval(polO.loop);
-              polO.myEE.emit('readyWriteOutputFile',label,
-                                dObj, outputFile);
-            }
-          },1000);*/
+
         }else{
           console.log( '\n\nBefore \'readyWriteOutputFile\' event emit\n'+
               'outputFile =\n%s\n' +
@@ -777,6 +873,7 @@ module.exports = (function(){
 
   /**
    * 'readyWriteOutputFile' event listener
+   * writes outputFile json file ready for uploading to Google Drive
    * @param {object} dObj - final json file data as an object
    *     (prepared for serializing )
    * @param {string} outputFile - full path to final json file
@@ -791,6 +888,7 @@ module.exports = (function(){
           console.log(
             err+'\nwhile attempting to write finally assembled json - file');
         }else{
+          // output file is written successfully
           outPth = polO.separatePathAndFileName(outputFile).path;
           console.log('Assembly has finished\noutput file:\n%s\n' +
           'json-file has been written into folder outPth =\n%s\n' +
@@ -806,7 +904,8 @@ module.exports = (function(){
     });
   };
   /**
-   * 'endpoint-a' event listener (assemble)
+   * 'endpoint-a' event listener (assemble finished)
+   * continues processing after outputFile has been written
    * @param {string}label unique identifier of project run
    * @param {string}outputFile  - full path to final json file
    *     including file name with extension.
@@ -863,19 +962,19 @@ module.exports = (function(){
     // rf - mode
     mode = 'rf';
     console.log('%s - mode - "read file" - reads googleScript json - file',mode);
-    polO.evokeJsFiles(label,fromFile,prefixTo,mode);
+    polO.evokeAspFiles(label,fromFile,prefixTo,mode);
     console.log('Thats All with %s testing',mode);
     }
     if(0){
     // req - mode
     mode = 'req';
     console.log('%s - mode ',mode);
-    polO.evokeJsFiles(label,fromFile,prefixTo,mode);
+    polO.evokeAspFiles(label,fromFile,prefixTo,mode);
     console.log('Thats All with %s testing',mode);
     }
     // assembling tests
     if(0){
-      // location of js-files edited
+      // location of asp-filess edited
       var pathFromSuffix = "ChxS0s";
       var pathFrom = prefixTo + pathFromSuffix;
       polO.assembleProjFile(label,fromFile,pathFrom);
@@ -887,7 +986,7 @@ module.exports = (function(){
    * - if polO.prefixTo is not set, file name of fromFile without
    * extension is used as prefixTo and the directory with name
    * <prefixTo>XXXXXX will be created inside host folder of fromFile and
-   * will be assigned as pathTo for js-files are going to be extracted .
+   * will be assigned as pathTo for asp-filess are going to be extracted .
    * XXXXXX - 6 random alphanumerical characters
    * - in the case when it's necessary to use some specified path as pathTo
    * parameter without appending six random characters to the name of folder
@@ -898,20 +997,20 @@ module.exports = (function(){
    * 4. if the folder with path pathTo does not exist it will be created.
    * @param {string}act - action parameter
    * @param {string}fromFile - original json file from which scripts of
-   *     js-files are extracted
+   *     asp-filess are extracted
    * @param {object}exp - exporter object of external scope
-   * @param {string}optPrefixTo - prefixTo parameter set which is opt_prefixTo
+   * @param {string}opt_PrefixTo - prefixTo parameter set which is opt_prefixTo
    *     inside calling function
    * @return {string} prefixTo value string as absolute path
    */
-  polO.getPrefixTo = function(act,fromFile,exp,optPrefixTo){
+  polO.getPrefixTo = function(act,fromFile,exp,opt_PrefixTo){
 
     var fF, dFF, sep = this.sep;
     if(act === 'eto'){
       return '';
     }else{
-      if(optPrefixTo){
-        return  exp.absPath( optPrefixTo, exp )  ;
+      if(opt_PrefixTo){
+        return  exp.absPath( opt_PrefixTo, exp )  ;
       }else if(exp.prefixTo){
         return exp.absPath(exp.prefixTo, exp);
       }else if( fromFile || exp.fromFile ){
@@ -936,15 +1035,15 @@ module.exports = (function(){
    * This case is appropriate to 'eto' action parameter mode for which
    * opt_prefixTo argument contains the value of pathTo parameter
    * @param {string}act action parameter
-   * @param {string}optPrefixTo - opt_prefixTo value in calling function
+   * @param {string}opt_PrefixTo - opt_prefixTo value in calling function
    * @param {object}exp - object of external scope (exporter)
    * @return {string}  pathTo value
    */
-  polO.getPathTo =  function(act,optPrefixTo,exp){
-    if(act === 'eto' && optPrefixTo ){
+  polO.getPathTo =  function(act,opt_PrefixTo,exp){
+    if(act === 'eto' && opt_PrefixTo ){
       exp.no6 = true;
       exp.prefixTo = '';
-      return exp.absPath(optPrefixTo, exp);
+      return exp.absPath(opt_PrefixTo, exp);
     }else{
       return exp.pathTo ?
              exp.absPath(exp.pathTo, exp) :
@@ -953,22 +1052,22 @@ module.exports = (function(){
   };
   /**
    * working engine
-   * fulfills: or extraction(evoking) of js-files from json-file
-   * or assembly of final json-file using js-files already modified
+   * fulfills: or extraction(evoking) of asp-filess from json-file
+   * or assembly of final json-file using asp-filess already modified
    * depending on the act - parameter value
-   * @param {string}label - the label of project being handled
+   * @param {string} label - the label of project being handled
    * @param {string}opt_act - action parameter indicating
    *     working mode: 'e' | 'a' |'ea' | 'eto' | 'ato' ...
-   * @param {string}opt_fromFile - source json file
-   * @param {string}opt_prefixTo - prefix of pathTo directory name.
+   * @param {string} opt_fromFile - source json file
+   * @param {string} opt_prefixTo - prefix of pathTo directory name.
    *     Six random alphanumerical characters are appended to prefix
-   *     to form pathTo - path of folder where to place js-files extracting.
+   *     to form pathTo - path of folder where to place asp-filess extracting.
    *     If action parameter opt_act has value 'eto' prefixTo has
    *     meaning and value of pathTo and no characters appending will be
    *     taken place.
-   * @param {string}opt_pathFrom - where to take js file for assembling json-file
-   * @param {string}opt_assFileNems - name of json file assembled
-   * @param {string}opt_outputFile - full path to user defined assembly file
+   * @param {string} opt_pathFrom - where to take js file for assembling json-file
+   * @param {string} opt_assFileNems - name of json file assembled
+   * @param {string} opt_outputFile - full path to user defined assembly file
    *     including file name and extension
    */
   polO.work = function(label,
@@ -1021,24 +1120,24 @@ module.exports = (function(){
     if(act === 'erf'){
       // rf - mode of evoking object
       mode = 'rf';
-      polO.evokeJsFiles(label,fromFile,prefixTo,act,mode);
+      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
     }else if(act === 'e' || act === 'ea' ){
       mode = 'req';
-      polO.evokeJsFiles(label,fromFile,prefixTo,act,mode);
-      console.log('in work: after evokeJsFiles %s evoke test\n'+
+      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
+      console.log('in work: after evokeAspFiles %s evoke test\n'+
           ' polO.pathTo=\n%s',
           mode,polO.pathTo);
     }else if( act === 'eto'){
       polO.no6 = true;
       prefixTo = '';
       polO.pathTo = pathTo;
-      polO.evokeJsFiles(label,fromFile,prefixTo,act,mode);
-      console.log('in work: after evokeJsFiles with \'%s\' action parameter\n' +
+      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
+      console.log('in work: after evokeAspFiles with \'%s\' action parameter\n' +
           'polO.pathTo=\n%s',
           act,polO.pathTo);
     }else if(act === 'a' || act === 'ato'){
       // assembly work
-      // location of js-files edited
+      // location of asp-filess edited
       // while act === 'a' prefixTo is useless, so to shorten the length
       // of argument in polO.run call it's worthwhile to use it's place for
       // pathFrom parameter. When parameters are returned from params file or
@@ -1155,13 +1254,13 @@ module.exports = (function(){
   };
   /**
    * polO.run - method
-   * executes evoking or assembly in dependence of the number, the types and
+   * executes evoking or assembly in dependence on the number, the types and
    * the values of method's arguments.
    *
    * Variables used in context and their meaning:
    * act - action type parameter
    * fromFile - full path of json file of appScript project downloaded
-   * pathTo - path of the folder wherein js-files extracted form fromFile
+   * pathTo - path of the folder wherein asp-filess extracted form fromFile
    *          will be stored to. (Could be assigned by user manually by
    *          setting polO.pathTo property)
    * prefixTo - part of pathTo path to which six random alphanumerical characters
@@ -1184,8 +1283,8 @@ module.exports = (function(){
    *     'f' - same as 'o' but object will be get from json file locating into
    *           __dirname + sep +'params' folder; where sep is OS paths separator
    *     'ea' - 'e'voke and then 'a'ssemble (default) using in test run and
-   *              at chaining processes like auto lint of js-files codes
-   *     'eto' - evoking js-files extracted from fromFile and write them into
+   *              at chaining processes like auto lint of asp-filess codes
+   *     'eto' - evoking asp-filess extracted from fromFile and write them into
    *           pathTo path of folder specified by user
    *      'ato' - assembles project's data into specified json file
    *
@@ -1229,9 +1328,9 @@ module.exports = (function(){
    *         Attention remark! - content of json-file json string must not
    *         contain line brakes special characters.
    *
-   * 'e'- evokes js-files from fromFile into new prefixToXXXXX -directory
+   * 'e'- evokes asp-filess from fromFile into new prefixToXXXXX -directory
    *      call ex.: polO.run('e',fromFile,prefixTo) (7)
-   * 'eto'- evokes js-files from fromFile into user defined pathTo directory
+   * 'eto'- evokes asp-filess from fromFile into user defined pathTo directory
    *        call ex.:
    *            polO.run('eto',fromFile,pathTo);  (8)
    *
@@ -1248,7 +1347,7 @@ module.exports = (function(){
    *
    * 'erf' - technical evoking mode using algorithm of direct content reading
    *         of json file (only for information. details see in code description)
-   *         to get the object whose properties contain js-files data
+   *         to get the object whose properties contain asp-filess data
    * Defaults:
    * For NON TESTING RUNS Default act = 'e'
    * if fromFile is not set the default value of
@@ -1294,12 +1393,14 @@ module.exports = (function(){
                       opt_outputFile){
     console.log('run-method begins -----------------> \n');
     console.log('typeof opt_label =%s',typeof opt_label );
+    
     var label = opt_label || polO.label;
     console.log('label has been assigned to %s',label);
+    
     var act,
         fromFile,
-        options;  //  donor options object
-    var sep = polO.sep;
+        options,  //  donor options object
+        sep = polO.sep;
 
 
     if(typeof label === 'object'){
@@ -1436,6 +1537,7 @@ module.exports = (function(){
               ' params-json-file:\n'+ opt_fromFile;
       }
     }
+    
     if( typeof options === 'object'){
       console.log( 'options is an object');
       if(typeof(label) === 'string' && !polO.hasParamsJson(label)){
@@ -1445,17 +1547,18 @@ module.exports = (function(){
             ( label ? label + '_' + options.label : options.label ) :
             label;
 
-        label=options.label;
+        label = options.label;
         console.log('final: options.label = %s label = %s',
             options.label,label);
       }else{
         label = options.label;
       }
+      
       act = options.act;
       polO.setCalcParams ( polO,options);
       polO.work(label, act);
       return;
-    }
+    } 
 
     polO.act = opt_act;
     act = opt_act;
@@ -1520,8 +1623,10 @@ module.exports = (function(){
                        opt_pathFrom,opt_assFileName,opt_outputFile, polO),
       label: label
     };
+    
     console.log('new options object set');
     polO.ppp(options);
+    
     polO.setCalcParams ( polO,options);
     console.log('before work call \n' +
         'options object properties and equivalents polO.params:\n%s \n',
@@ -1537,37 +1642,37 @@ module.exports = (function(){
   /**
    * returns outputFile value depend of the values of other
    * parameters
-   * @param {string}optAct
-   * @param {string}optFromFile
-   * @param {string}optPrefixTo
-   * @param {string}optPathFrom
+   * @param {string}opt_Act
+   * @param {string}opt_FromFile
+   * @param {string}opt_PrefixTo
+   * @param {string}opt_PathFrom
    * @return {string} value of outputFile
    */
-  polO.getPathFrom = function(optAct,optFromFile,optPrefixTo,optPathFrom,pol){
-    var act = optAct,
-        fromFile = optFromFile,
-        prefixTo = optPrefixTo,
-        pathFrom = optPathFrom;
+  polO.getPathFrom = function(opt_Act, opt_FromFile, opt_PrefixTo, opt_PathFrom){
+    var act = opt_Act,
+        fromFile = opt_FromFile,
+        prefixTo = opt_PrefixTo,
+        pathFrom = opt_PathFrom;
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (optPrefixTo = '')
+        // prefix's sit is filled by empty string (opt_PrefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if(/\.json$/.test(pathFrom)){
             throw 'Something is wrong:there is path of json file \n' +
                 'on pathFrom sit.';
-          }else if(!polO.isArgPathFrom(fromFile,optPathFrom)){
+          }else if(!polO.isArgPathFrom(fromFile,opt_PathFrom)){
             throw 'getPathFrom: incorrect value of pathFrom';
           }else{
-            return polO.absPath(optPathFrom);
+            return polO.absPath(opt_PathFrom);
           }
         }else{
           throw 'pathFrom is not set for \'a\' or \'ato\' action';
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,optPrefixTo)){
-          console.log('in getPathFrom: pathFrom is sitting on optPrefix place');
+        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
+          console.log('in getPathFrom: pathFrom is sitting on opt_Prefix place');
           return polO.absPath(pathFrom);
         }else if(/\.json$/.test(pathFrom)){
           throw 'in getPathFrom: json file path instead of pathFrom';
@@ -1583,26 +1688,26 @@ module.exports = (function(){
   /**
    * returns outputFile value depend of the values of other
    * parameters
-   * @param {string}optAct
-   * @param {string}optFromFile
-   * @param {string}optPrefixTo
-   * @param {string}optPathFrom
-   * @param {string}optAssFileName
-   * @param {string}optOutputFile
+   * @param {string}opt_Act
+   * @param {string}opt_FromFile
+   * @param {string}opt_PrefixTo
+   * @param {string}opt_PathFrom
+   * @param {string}opt_AssFileName
+   * @param {string}opt_OutputFile
    * @return {string} value of outputFile
    */
   polO.getAssFileName = function(
-      optAct,optFromFile,optPrefixTo,optPathFrom,
-      optAssFileName,optOutputFile,pol){
-    var act = optAct,
-        fromFile = optFromFile,
-        prefixTo = optPrefixTo,
-        pathFrom = optPathFrom,
-        assFileName = optAssFileName,
-        outputFile = optOutputFile;
+      opt_Act,opt_FromFile,opt_PrefixTo,opt_PathFrom,
+      opt_AssFileName,opt_OutputFile,pol){
+    var act = opt_Act,
+        fromFile = opt_FromFile,
+        prefixTo = opt_PrefixTo,
+        pathFrom = opt_PathFrom,
+        assFileName = opt_AssFileName,
+        outputFile = opt_OutputFile;
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (optPrefixTo = '')
+        // prefix's sit is filled by empty string (opt_PrefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if(/\.json$/.test(pathFrom)){
@@ -1624,8 +1729,8 @@ module.exports = (function(){
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,optPrefixTo)){
-          console.log('in getAssFileName: pathFrom is sitted on optPrefix place');
+        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
+          console.log('in getAssFileName: pathFrom is sitted on opt_Prefix place');
           if(pathFrom){
             if(/\.json$/.test(pathFrom)){
               console.log('outputFile on pathFrom sit');
@@ -1637,7 +1742,7 @@ module.exports = (function(){
           }else{
             return '';
           }
-        }else if(!polO.isArgPathFrom(fromFile,optPathFrom)){
+        }else if(!polO.isArgPathFrom(fromFile,opt_PathFrom)){
           throw 'getAssFileName: incorrect value of pathFrom';
         }else{
           // pathFrom is good. Looks at assFileName
@@ -1663,26 +1768,26 @@ module.exports = (function(){
    * returns outputFile value depending on the presence and values of
    * method's arguments and values of other managing parameters inside calling
    * function or method
-   * @param {string}optAct
-   * @param {string}optFromFile
-   * @param {string}optPrefixTo
-   * @param {string}optPathFrom
-   * @param {string}optAssFileName
-   * @param {string}optOutputFile
+   * @param {string}opt_Act
+   * @param {string}opt_FromFile
+   * @param {string}opt_PrefixTo
+   * @param {string}opt_PathFrom
+   * @param {string}opt_AssFileName
+   * @param {string}opt_OutputFile
    * @return {string} value of outputFile
    */
   polO.getOutputFile = function(
-      optAct, optFromFile, optPrefixTo, optPathFrom,
-      optAssFileName, optOutputFile,pol){
-    var act = optAct,
-        fromFile = optFromFile,
-        prefixTo = optPrefixTo,
-        pathFrom = optPathFrom,
-        assFileName = optAssFileName,
-        outputFile = optOutputFile;
+      opt_Act, opt_FromFile, opt_PrefixTo, opt_PathFrom,
+      opt_AssFileName, opt_OutputFile,pol){
+    var act = opt_Act,
+        fromFile = opt_FromFile,
+        prefixTo = opt_PrefixTo,
+        pathFrom = opt_PathFrom,
+        assFileName = opt_AssFileName,
+        outputFile = opt_OutputFile;
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (optPrefixTo = '')
+        // prefix's sit is filled by empty string (opt_PrefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if( /\.json$/.test(pathFrom) ){
@@ -1710,7 +1815,7 @@ module.exports = (function(){
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,optPrefixTo)){
+        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
           console.log('in getOutputFile: pathFrom is lived on prefixTo place');
           if(pathFrom){
             if(/\.json$/.test(pathFrom)){
@@ -1734,7 +1839,7 @@ module.exports = (function(){
                      ' is not json file!!!';
             }
           }
-        }else if( !polO.isArgPathFrom(fromFile,optPathFrom)){
+        }else if( !polO.isArgPathFrom(fromFile,opt_PathFrom)){
           throw 'getOutputFile: incorrect value of pathFrom';
         }else{
           // pathFrom is good. Looks at assFileName and outputFile
@@ -1777,7 +1882,7 @@ module.exports = (function(){
    *     array property files - obj=JSON.parse(fromFileContent)
    *     Array.isArray( obj.files ) === true
    * 2) pathFrom folder should contain all files, described by
-   *     obj.files
+   *     dObj.files
    * 3) pathFrom directory can't be not set in a-actions.
    *    but pathFrom could take prefixTo sit among functions' arguments.
    *    To verify that this is the case rule 2) may be used.
@@ -1794,7 +1899,7 @@ module.exports = (function(){
   polO.isArgPathFrom =  function( fromFile,arg){
     var fList, obj, files;
     console.log('in isArgPathFrom:\nfromFile=\n%s\narg=\n%s\n' +
-    'fs.existsSynb(arg) = %s',
+    'fs.existsSync(arg) = %s',
         fromFile,arg, fs.existsSync(arg));
     if( !fs.existsSync(arg) ){
       return false;
@@ -1802,7 +1907,7 @@ module.exports = (function(){
     fnms = require(fromFile).files.
         map( function(fl){return fl.name;} );
     try{
-    fList = fs.readdirSync( arg).
+      fList = fs.readdirSync( arg).
         map( function(el){ return el.replace(/\..+$/,'');});
     }catch(e){
       console.log('entity considering as directory is not that one!');
@@ -1844,7 +1949,7 @@ module.exports = (function(){
   /**
    * launches pol-methods with different parameters values over
    * specified timeout period to exclude traffic jam
-   * @param {string}label - the label or id of project being handled
+   * @param {string}opt_label - the label or id of project being handled
    * @param {number}opt_t timeout delay in millisecond. Default=10000
    * @param {}opt_first - is used as opt_act parameter in methods of module
    * @param {}opt_second - equivalent to opt_fromFile parameter in module's
@@ -2139,6 +2244,7 @@ module.exports = (function(){
     myEE.on('assembleFileReady',polO.evokeObjFromAssFile);
     myEE.on('objReady',polO.evokeScriptsFromObj);
     myEE.on('preUploadAssembleFile',polO.preUploadFile);
+    myEE.on('preUploadAssembleFileAsync',polO.preUploadFileAsync);
     myEE.on('readyWriteOutputFile',polO.writeAssFile);
     myEE.on('endpoint-e',polO.eEndpoint);
     myEE.on('endpoint-a',polO.aEndpoint);
@@ -2161,11 +2267,11 @@ module.exports = (function(){
    * @param {object}pol - module's returning object
    * @return {string} absolute value of input path
    */
-  polO.absPath = function(pth,pol){
+  polO.absPath = function(pth, pol){
     if (!pth){return '';}
     return  path.isAbsolute(pth) ?
             pth :
-            path.join(pol.dirname,pth);
+            path.join(pol.dirname, pth);
   };
 
 
