@@ -1,7 +1,7 @@
-/**
+ /**
  * @fileoverview
- * module script <pol> determined in package.json property <scripts>
- * Executes evocation or assembly in dependence of the values
+ * module script -pol- determined in package.json property <scripts>
+ * Executes evocation or assembly in dependence on the values
  * of action parameters: 'e' - evoke (default) or 'a' - assemble ;
  * The call of this script module is carried out by npm run commands
  * presuming running command line while in module hosting directory as
@@ -36,7 +36,7 @@
  *
  * are equivalent to npm run e fromFile prefixTo , where
  *
- *    arg2 = 'e' ;   - action is evoking ( or extracting) js-files from object
+ *    arg2 = 'e' ;   - action is evoking ( or extracting) asp-files from object
  *                     parsed from json-file of previously downloaded
  *                     appScript project's file (.json)
  *
@@ -69,7 +69,7 @@
 *      in format of string "disk:\\path\\to\\the\\fileName.json"
  * prefixTo -
  *     as string 'disk:\\path\\to\\the\\dirNamePrefix_'
- * as a result of execution data will be extracted and js-files will be saved into
+ * as a result of execution data will be extracted and asp-files will be saved into
  * the folder 'disk:\\path\\to\\the\\dirNamePrefix_XXXXXX' , where XXXXXX are six
  * random alpha numerical characters.
  *
@@ -113,7 +113,7 @@
  */
  /**
  * @description of How to determine fourth argument ( with index 3)
- * fromFile - is params.json file - file in which calculating parameters are
+ * fromFile -  is params.json file - file in which calculating parameters are
  * values of appropriate properties.
  * Criteria:
  * a) last part of json-file name is _params
@@ -145,6 +145,14 @@ var params,
     label;
 
 if( process.argv.length === 3) {
+  /** the case with only three comand line arguments. If third parameter is
+   * parameters' file it contains all necessary data for any
+   * custom run. Because of everything could be set inside params's file
+   * json string
+   * npm run pol paramsFileName
+   * npm argv[0] argv[1] argv[2]
+   */
+
   paramsFile = pol.hasParamsJson( process.argv[2] );
   if( paramsFile ){
 
@@ -155,11 +163,23 @@ if( process.argv.length === 3) {
     console.log( params );
     label = params.label ? params.label :
              'Test run as \'npm run pol ...\' command';
+    // second method's parameter is path to json file contained parameters data
     pol.run( label, process.argv[2]);
     return;
   }else{
-    // test depending on act parameter
-    act = process.argv[2] || 'ea' ;
+    // third comand line argument is not json file path
+    // than third parameter is 'act' parameter and
+    // run depends on act parameter value: or 'e' or 'ea'
+    //  'ea' is default and is considered to be set if argv[2] is not set
+    // this is Test run with predetermined
+    // a)input data json-file of simple test project - testProjFile.json
+    // b) parameters-json-file
+    // c) pathTo parameter
+    // d) pathFrom  parameter
+    //
+    // calculating parameters are passed into run by means of
+    // appropriate pol-object properties
+    act = process.argv[2] || 'ea' ; // 'ea' is default
     pol.act = act;
     pol.fromFile = __dirname + '\\test\\testProjFile.json';
     if( act === 'e' || act === 'ea'){
@@ -169,11 +189,13 @@ if( process.argv.length === 3) {
     }else if( act !=='ea' ){
       console.log('argv[2] is not parames file name and not \'ea\'.' +
           ' Error could has place.');
+
     }else{
       pol.fromFile = __dirname + '\\test\\testProjFile.json';
     }
   }
 }else if(process.argv.length === 2){
+  // allDefault case
   act = 'ea' ;
   pol.act = act;
   pol.fromFile = __dirname + '\\test\\testProjFile.json';
