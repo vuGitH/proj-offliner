@@ -1657,6 +1657,7 @@ module.exports = (function(){
    * @ return {object | void}
    */
   polO.runArg_2_obj_or_file = function(label,opt_act, opt_fromFile){
+    var options;
     if(typeof opt_fromFile === 'object'){
       // paramsObject as second argument case (2)
       options = opt_fromFile;
@@ -1710,7 +1711,7 @@ module.exports = (function(){
   * @ return {object | void}
    */
   polO.runArg_2_fromFile_gear = function(label, opt_act, opt_fromFile){
-
+    var options;
     if( polO.fromFile ){
       if(label){
         polO.label = polO.label ? label + '_' + polO.label : label;
