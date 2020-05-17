@@ -1610,6 +1610,7 @@ module.exports = (function(){
       }else{
         console.log('Data from params json file  run Case identified');
         options = require( './params/' + opt_act + '_params.json');
+        // cleans cache for a purpouse
         delete require.cache[
             require.resolve( './params/' + opt_act + '_params.json')];
         console.log('oprions.label from file = '+ options.label);
@@ -1620,13 +1621,12 @@ module.exports = (function(){
         }
       }
     }else if( !opt_act){
-      // fromFile - gear
       options = polO.runArg_2_obj_or_file (label,opt_act, opt_fromFile);
       if(!options){
-        // possible scenarios
+        // fromFile - gear. Possible scenarios:
         // - pass parameters through pol object's properties
         // - all default case or
-        // - standard case with testing act
+        // - standard case with testing act 'e' and parameters preset
         options = polO.runArg_2_fromFile_gear(label,opt_act, opt_fromFile);
 
       }
@@ -1677,7 +1677,7 @@ module.exports = (function(){
     return options;
   };
   /**
-  * calculating parameters are passed to run call through
+  * calculating parameters are passed to .run call through
   *  polO object - for.ex. -    pol.act, pol.fromFile, ...
   *
   * The verification that this is the case presumes that
@@ -1702,14 +1702,12 @@ module.exports = (function(){
   * act = 'a'   : fromFile, pathFrom, assFileName, outputFile
   * act = 'ato' : fromFile, pathFrom, assFileName, outputFile
   *
-  *
-  * possible scenarios
+  * fromFile - gear. Possible scenarios:
   * - pass parameters through pol object's properties
   * - all default case or
-  * - standard case with testing act
+  * - standard case with testing act 'e' and parameters preset
   *
   * @ return {object | void}
-
    */
   polO.runArg_2_fromFile_gear = function(label, opt_act, opt_fromFile){
 
