@@ -1050,7 +1050,7 @@ module.exports = (function(){
   };
   /**
    * another form of polO.work() method but with one argument
-   * beint options -object parameter
+   * named 'options' - object with parameters' propoerties
    * @param {object} o see bellow
    */
   polO.workWith = function(o){
@@ -1067,8 +1067,7 @@ module.exports = (function(){
     polO.work(label, act,
               fromFile,
               prefixTo,  // it's pathTo if act= 'eto'
-                         // and pathTo if  act == 'a' &&
-                         //                !opt_pathFrom
+                         // and pathTo if  act === 'a' && !opt_pathFrom
               pathFrom,
               assFileName,
               outputFile
@@ -1104,23 +1103,22 @@ module.exports = (function(){
                       opt_assFileName,
                       opt_outputFile
                       ){
-    console.log('inside work: \nopt_outputFile = ' + opt_outputFile +
-            '\nopt_assFileName = ' + opt_assFileName );
-    console.log('polO.outputFile = ' + polO.outputFile +
-            '\npolO.assFileName = ' + polO.assFileName );
+    console.log('inside work: ' +
+                '\nopt_outputFile = ' + opt_outputFile +
+                '\nopt_assFileName = ' + opt_assFileName +
+                '\npolO.outputFile = ' + polO.outputFile +
+               '\npolO.assFileName = ' + polO.assFileName );
     var fromFile, mode, pathTo, prefixTo, pathFrom, outputFile, assFileName;
-    var act = opt_act ||
-              (opt_fromFile || polO.fromFile ?
-               'e' :
-               'ea'     // 'ea' is default for test mode
-              );
+    var act = opt_act ||(opt_fromFile || polO.fromFile) ?
+              'e' : 'ea'     // 'ea' is default for test mode
+              ;
     polO.act = act;
     var sep = polO.sep;       //  path separator
     //  absolute path and filename
     fromFile = polO.absPath(opt_fromFile, polO) ||
                polO.absPath(polO.fromFile, polO) ||
                __dirname + sep + 'test' + sep + 'testProjFile.json';
-    prefixTo =  polO.getPrefixTo(act,fromFile,polO,opt_prefixTo);
+    prefixTo =  polO.getPrefixTo(act, fromFile, polO, opt_prefixTo);
     polO.prefixTo = prefixTo;
     pathTo = polO.getPathTo(act,opt_prefixTo,polO);
     polO.pathTo = pathTo;
@@ -1139,40 +1137,40 @@ module.exports = (function(){
                 pathTo,
                 __dirname,
                 prefixTo,
-                fromFile
-    );
+                fromFile);
     if(act === 'erf'){
       // rf - mode of evoking object
       mode = 'rf';
-      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
+      polO.evokeAspFiles(label, fromFile, prefixTo, act, mode);
     }else if(act === 'e' || act === 'ea' ){
       mode = 'req';
-      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
+      polO.evokeAspFiles(label, fromFile, prefixTo, act, mode);
       console.log('in work: after evokeAspFiles %s evoke test\n'+
           ' polO.pathTo=\n%s',
-          mode,polO.pathTo);
+          mode, polO.pathTo);
     }else if( act === 'eto'){
       polO.no6 = true;
       prefixTo = '';
       polO.pathTo = pathTo;
-      polO.evokeAspFiles(label,fromFile,prefixTo,act,mode);
+      polO.evokeAspFiles(label, fromFile, prefixTo, act, mode);
       console.log('in work: after evokeAspFiles with \'%s\' action parameter\n' +
           'polO.pathTo=\n%s',
           act,polO.pathTo);
     }else if(act === 'a' || act === 'ato'){
-      // assembly work
-      // location of asp-filess edited
-      // while act === 'a' prefixTo is useless, so to shorten the length
-      // of argument in polO.run call it's worthwhile to use it's place for
-      // pathFrom parameter. When parameters are returned from params file or
-      // from object options the probability exists that pathTo === pathFrom
-      // and prefixTo is set and yet RegExp(prefixTo).test( pathTo ) === true
-      // at this case at pol.run call is rational to assign pathFrom value to
-      // prefixTo method's argument (pathFrom occupies the sit of prefixTo).
-
+      /** assembly work
+      * location of asp-filess edited
+       * while act === 'a' prefixTo is useless, so to shorten the length
+       * of argument in polO.run call it's worthwhile to use it's place for
+       * pathFrom parameter. When parameters are returned from params file or
+       * from object options the probability exists that pathTo === pathFrom
+       * and prefixTo is set and yet RegExp(prefixTo).test( pathTo ) === true
+       * at this case at pol.run call is rational to assign pathFrom value to
+       * prefixTo method's argument (pathFrom occupies the sit of prefixTo).
+       */
       pathFrom = opt_pathFrom || opt_prefixTo || polO.pathFrom ;
       polO.outputFile = opt_outputFile || polO.outputFile;
       outputFile = polO.outputFile;
+      
       outputFile = polO.checkAssFileName(outputFile);
       polO.outputFile = outputFile;
       /**
@@ -1185,7 +1183,7 @@ module.exports = (function(){
        * determined by opt_assFileName parameter. This does not change
        * the location directory of the file only the name.
        * 3. By user preference it's possible to specify fixed name and
-       * location directory assigning full file path( including file name
+       * location directory by assigning full file path( including file name
        * and .json extension) by opt_outputFile parameter. The value of this
        * parameter should be monitored inside polO.assembleProjFile method
        * and is transferred there by polO.outputFile property or
@@ -1222,11 +1220,11 @@ module.exports = (function(){
    * fromFileName_params.json, were fromFileName is
    * path.baseName(fromFile,'.json') file name without extension of fromFile.
    *
-   * @param {string}arg3 - params file name without end part '_params.json'
+   * @param {string} arg3 - params file name without end part '_params.json'
    *     historically it has been introduced for nmp pol command fourth
-   *     argument (index 3) of command line command. So it was named arg3
-   * @return {boolean} true if a file with initial part of name indicated
-   *     does exist and present in the ./params  folder
+   *     argument (index 3) of CLI command. So it was named arg3
+   * @return {string} file path if a file with initial part of name indicated
+   *     does exist and present in the ./params  folder, '' otherwise
    */
   polO.hasParamsJson = function(arg3){
     var sep = polO.sep;
@@ -1265,10 +1263,8 @@ module.exports = (function(){
       'label'
     ];
     var ipr;
-
     for( var i=0; i < prnms.length; i++){
-      ipr = prnms[i];
-      //console.log('ipr = '+ipr);
+      ipr = prnms[i];      
       console.log('options.' + ipr + '=' +
                   ((options[ipr]) ? options[ipr] : 'empty') +'\n'+
                   'polO.' + ipr + '=' +
@@ -1296,9 +1292,8 @@ module.exports = (function(){
    *               name of resulting json-file is assigned automatically
    *               following the rule described bellow or in methods' description
    * Arguments options:
-   *     No Arguments - all arguments and parameters will have Default values.
-   *         is used while testing
-   *         call example: polO.run(); // (0)
+   * No Arguments - all arguments and parameters will have Default values.
+   * is used while testing; call example: polO.run(); // (0)
    *
    * First argument's values vs meaning & functionality (act - action parameter):
    *     'e' - evoke
@@ -1331,7 +1326,7 @@ module.exports = (function(){
    *       params-json-fileName  without ending string '_params.json'
    *      (see example bellow). Params-json-file itself should be located in the
    *       folder with path: __dirname + sep +'params' ('./params' relative to
-   *       package root directory)
+   *       proj-offliner package root directory)
    *       call samples:
    *           polO.run('f',paramsFileNamePart); // (4) or
    *           polO.run('',paramsFileNamePart);  // (5) or
@@ -1341,7 +1336,7 @@ module.exports = (function(){
    *        !/\.json$/.test(paramsFileNamePart) &&
    *        !/_params\.json$/.test(paramsFileNamePart)
    *        is boolean true,
-   *        where paramsFileNamePart is string presenting
+   *        where paramsFileNamePart is presumed to be string presenting
    *        file name without '_params.json' of params-json-file located in
    *         __dirname+sep+'params' directory (sep='\\' in the case of Windows)
    *          and containing json string with properties:
@@ -1350,7 +1345,7 @@ module.exports = (function(){
    *           "pathTo": "...","pathFrom": "...","assFileName": "...",
    *           "outputFile: "..."}
    *         Attention remark! - content of json-file json string must not
-   *         contain line brakes special characters.
+   *         contain line breakes special characters.
    *
    * 'e'- evokes asp-filess from fromFile into new prefixToXXXXX -directory
    *      call ex.: polO.run('e',fromFile,prefixTo) (7)
@@ -1358,19 +1353,21 @@ module.exports = (function(){
    *        call ex.:
    *            polO.run('eto',fromFile,pathTo);  (8)
    *
-   * 'a' - assembling final project's json file
+   * 'a' - assembles final project's json file
    *       call samples:
    *       polO.run('a',fromFile,pathFrom,opt_assembleFileName); // (9) or
    *
-   * 'ato' - assembling final project's json file specified. The final json-file
+   * 'ato' - assembles final project's json file specified. The final json-file
    *       and it's location are strictly determined by user
    *       call samples:
    *       polO.run('ato',fromFile,pathFrom,outputFile); // (10)
    *       where outputFile is a full path including file name and
    *       extension .json where to write final json assembly file
    *
-   * 'erf' - technical evoking mode using algorithm of direct content reading
-   *         of json file (only for information. details see in code description)
+   * 'erf' - technical evoking mode using algorithm of direct content 
+   *         synchronous or asynchronous reading of AppsScript project
+   *         json file downloaded
+   *         (only for information. Details see in code description)
    *         to get the object whose properties contain asp-filess data
    * Defaults:
    * For NON TESTING RUNS Default act = 'e'
@@ -1401,7 +1398,7 @@ module.exports = (function(){
    *        outputFile: '...'
    *      };
    *     or is a string being param json file name without trailing '_params.json'
-   * @param {string|Object}opt_fromFile (or_paramsObj or parmsFileNamePart)
+   * @param {string|Object}opt_fromFile (or paramsObj or parmsFileNamePart)
    * @param {string}opt_prefixTo ( could have meaning of pathTo (eto) or pathFrom (a) )
    * @param {string}opt_pathFrom
    * @param {string}opt_assFileName
@@ -1438,7 +1435,6 @@ module.exports = (function(){
       }
     }
 
-
     if( typeof options === 'object'){
       console.log( 'options is an object');
       if(typeof(label) === 'string' && !polO.hasParamsJson(label)){
@@ -1464,47 +1460,14 @@ module.exports = (function(){
     }
 
     polO.act = opt_act;
-    act = opt_act;
+    act = opt_act;    
     fromFile = polO.absPath(opt_fromFile, polO);
-    if(/\.json$/.test(opt_fromFile)){
-      // source json file
-      /**
-       * Requirements to json file
-       * checks
-       * 1. if json file exists on drive
-       * 2. does data of json file is json by means of
-       * try{
-       *    var ob=JSON.parse( fs.readFileSync( opt_fromFile);
-       * }catch(e){
-       *  console.log(e);
-       *  return;
-       * }
-       * var check = Array.isArray(ob.files)&& ob.files.length>0;
-       * if(check){
-       *  // check passed good
-       * }
-       */
-      if( !fs.existsSync(fromFile) ){
-        throw 'file '+fromFile+' does not exists on PC';
-      }else{
-        var ob;
-        try {
-          ob = JSON.parse( fs.readFileSync (fromFile) );
-        }catch(e){
-          console.log(e);
-          console.log('Bad json-string in file fromFile =\n%s',
-                      fromFile);
-          throw 'Bad json-string in file fromFile =\n' + fromFile;
-        }
-        polO.fromFile = fromFile;
-      }
-    }else{
-      throw 'opt_fromFile is not json-file or has bad name:\n' +
-            opt_fromFile + '\n or bad data';
+    
+    if(polO.isFileGoodJson(fromFile, opt_fromFile)) {
+      polO.fromFile = fromFile;
     }
-
-    if(['e','ea','eto','erf','a','ato'].indexOf(opt_act) < 0 &&
-        opt_act){
+    
+    if(act && ['e','ea','eto','erf','a','ato'].indexOf(act) < 0){
       console.log( 'incorrect value of opt_act parameter!');
       act = 'e';
     }
@@ -1514,24 +1477,22 @@ module.exports = (function(){
       act: act,
       fromFile: fromFile,
       prefixTo: (act === 'a' || act=== 'ato') ?
-                '' :
-                (act === 'eto' ? '' : polO.absPath(opt_prefixTo, polO)),
-      pathTo: (act === 'eto') ?
-              polO.absPath(opt_prefixTo, polO) :
-              polO.absPath(polO.pathTo, polO),
-      pathFrom: polO.getPathFrom(act, fromFile, opt_prefixTo, opt_pathFrom,
-                                 polO),
+          '' : (act === 'eto' ? '' : polO.absPath(opt_prefixTo, polO)),
+      pathTo: (act === 'eto') ? 
+          polO.absPath(opt_prefixTo, polO) : polO.absPath(polO.pathTo, polO),
+      pathFrom: polO.getPathFrom(
+          act, fromFile, opt_prefixTo, opt_pathFrom, polO),
       assFileName: polO.getAssFileName(act,fromFile,opt_prefixTo,
                        opt_pathFrom,opt_assFileName,opt_outputFile, polO),
       outputFile: polO.getOutputFile(act,fromFile,opt_prefixTo,
                        opt_pathFrom,opt_assFileName,opt_outputFile, polO)
     };
-
     console.log('new options object set');
+    
     polO.ppp(options);
-
     polO.setCalcParams ( polO,options);
-    console.log('before work call \n' +
+ 
+     console.log('before work call \n' +
         'options object properties and equivalents polO.params:\n%s \n',
         (function(){
           var str='';
@@ -1539,9 +1500,54 @@ module.exports = (function(){
             str+= 'opts.'+i +'='+options[i]+'\npolO.'+i+'='+ polO[i]+'\n';
           }
           return str;
-        }()));
+        }()));        
+        
     polO.work(label,polO.act);
   };
+  /**
+   * tests if a file is good json file
+   * source json file
+   *
+   * Requirements to json file
+   * checks
+   * 1. if json file exists on drive
+   * 2. does data of json file is json by means of
+   * try{
+   *    var ob=JSON.parse( fs.readFileSync( opt_fromFile);
+   * }catch(e){
+   *  console.log(e);
+   *  return;
+   * }
+   * var check = Array.isArray(ob.files)&& ob.files.length>0;
+   * if(check){
+   *  // check passed good
+   * }
+   *
+   * @param {string} abs  absolute file path
+   * @param {string} rel relative file path
+   * @return {Boolean} true if Yes or throw Error
+   */
+  polO.isFileGoodJson = function(abs,rel){
+    var ob;
+    if(/\.json$/.test(rel)){
+      
+      if( !fs.existsSync(abs) ){
+        throw 'file ' + abs +' does not exists on PC';
+      }else{
+        try {
+          ob = JSON.parse( fs.readFileSync (abs) );
+        }catch(e){
+          console.log(e);
+          console.log('Bad json-string in file fromFile =\n%s', abs);
+          throw 'Bad json-string in file fromFile =\n' + abs;
+        }        
+      }
+    }else{
+      throw 'opt_fromFile is not json-file or has bad name:\n' +
+            opt_fromFile + '\n or bad data';
+    }
+    return true;
+  }
   /**
   * pre-sets options object depending on values of
    * polO.run method's arguments:
@@ -1560,20 +1566,19 @@ module.exports = (function(){
       console.log('Data from params json file %s run Case identified',
           './params/' + label + '_params.json');
       options = require( './params/' + label + '_params.json');
+      // clean cache
       delete require.cache[
           require.resolve( './params/' + label + '_params.json')];
     }else if( label === 'o'){
       if( typeof opt_act === 'object'){
-        options = opt_act;
-        if(!options.label){
-          console.log( 'label is not set inside options while action is \'o\'');
-        }
+        options = opt_act;         
       }else{
         throw 'options object is not set while act === \'o\'';
       }
     }else if( label === 'f'){
       if( polO.hasParamsJson(opt_act)){
           options = require( './params/' + opt_act + '_params.json');
+          //clear cache
           delete require.cache[
               require.resolve( './params/' + opt_act + '_params.json')];
           if(!options.label){
