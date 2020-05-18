@@ -1170,7 +1170,7 @@ module.exports = (function(){
       pathFrom = opt_pathFrom || opt_prefixTo || polO.pathFrom ;
       polO.outputFile = opt_outputFile || polO.outputFile;
       outputFile = polO.outputFile;
-      
+
       outputFile = polO.checkAssFileName(outputFile);
       polO.outputFile = outputFile;
       /**
@@ -1264,7 +1264,7 @@ module.exports = (function(){
     ];
     var ipr;
     for( var i=0; i < prnms.length; i++){
-      ipr = prnms[i];      
+      ipr = prnms[i];
       console.log('options.' + ipr + '=' +
                   ((options[ipr]) ? options[ipr] : 'empty') +'\n'+
                   'polO.' + ipr + '=' +
@@ -1364,7 +1364,7 @@ module.exports = (function(){
    *       where outputFile is a full path including file name and
    *       extension .json where to write final json assembly file
    *
-   * 'erf' - technical evoking mode using algorithm of direct content 
+   * 'erf' - technical evoking mode using algorithm of direct content
    *         synchronous or asynchronous reading of AppsScript project
    *         json file downloaded
    *         (only for information. Details see in code description)
@@ -1460,13 +1460,13 @@ module.exports = (function(){
     }
 
     polO.act = opt_act;
-    act = opt_act;    
+    act = opt_act;
     fromFile = polO.absPath(opt_fromFile, polO);
-    
+
     if(polO.isFileGoodJson(fromFile, opt_fromFile)) {
       polO.fromFile = fromFile;
     }
-    
+
     if(act && ['e','ea','eto','erf','a','ato'].indexOf(act) < 0){
       console.log( 'incorrect value of opt_act parameter!');
       act = 'e';
@@ -1478,7 +1478,7 @@ module.exports = (function(){
       fromFile: fromFile,
       prefixTo: (act === 'a' || act=== 'ato') ?
           '' : (act === 'eto' ? '' : polO.absPath(opt_prefixTo, polO)),
-      pathTo: (act === 'eto') ? 
+      pathTo: (act === 'eto') ?
           polO.absPath(opt_prefixTo, polO) : polO.absPath(polO.pathTo, polO),
       pathFrom: polO.getPathFrom(
           act, fromFile, opt_prefixTo, opt_pathFrom, polO),
@@ -1488,10 +1488,10 @@ module.exports = (function(){
                        opt_pathFrom,opt_assFileName,opt_outputFile, polO)
     };
     console.log('new options object set');
-    
+
     polO.ppp(options);
     polO.setCalcParams ( polO,options);
- 
+
      console.log('before work call \n' +
         'options object properties and equivalents polO.params:\n%s \n',
         (function(){
@@ -1500,8 +1500,8 @@ module.exports = (function(){
             str+= 'opts.'+i +'='+options[i]+'\npolO.'+i+'='+ polO[i]+'\n';
           }
           return str;
-        }()));        
-        
+        }()));
+
     polO.work(label,polO.act);
   };
   /**
@@ -1530,7 +1530,7 @@ module.exports = (function(){
   polO.isFileGoodJson = function(abs,rel){
     var ob;
     if(/\.json$/.test(rel)){
-      
+
       if( !fs.existsSync(abs) ){
         throw 'file ' + abs +' does not exists on PC';
       }else{
@@ -1540,7 +1540,7 @@ module.exports = (function(){
           console.log(e);
           console.log('Bad json-string in file fromFile =\n%s', abs);
           throw 'Bad json-string in file fromFile =\n' + abs;
-        }        
+        }
       }
     }else{
       throw 'opt_fromFile is not json-file or has bad name:\n' +
@@ -1571,7 +1571,7 @@ module.exports = (function(){
           require.resolve( './params/' + label + '_params.json')];
     }else if( label === 'o'){
       if( typeof opt_act === 'object'){
-        options = opt_act;         
+        options = opt_act;
       }else{
         throw 'options object is not set while act === \'o\'';
       }
