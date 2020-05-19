@@ -38,6 +38,9 @@ module.exports = (function(){
   polO.log.filesStatus = {};
   polO.log.nOutFilesFixed = 0;
   polO.myEE = polO.getEventsEmInstance();
+  /** @property {number} polO.timeLag lag in milliseconds used in runLancher
+   * to delay next test run inside polO.workTest() method */
+  polO.timeLag = 0;
 
   //  polO modification
   // path parts separator
@@ -417,29 +420,6 @@ module.exports = (function(){
     return fpth;
   };
   /**
-   * Checks availability of final params file name.
-   * If the one being presummed is already  available
-   * the digit preceded '_params.json' part will be increased by one
-   * @param {string}pathTesting - full path of params-file testing including
-   *     file name and extension
-   * @return {string} name chosen
-   */
-  /*
-  polO.checkParamsFileName___ = function(pathTesting){
-
-    while( fs.existsSync(pathTesting)){
-      pathTesting  = (function (){
-        var nm, a, i, iplus;
-        nm = pathTesting.replace(/_params\.json/,'');
-        a = nm.split('_');
-        i = parseInt(a[a.length - 1]);
-        iplus = i + 1;
-        return nm.replace(/\_\d+$/,'') + "_" + iplus + "_params.json";}());
-    }
-    return pathTesting;
-  };
-  */
-  /**
    * increases by one digital part of pathname
    * if the part of file name before extention and
    * after last underscore is not digital
@@ -462,7 +442,14 @@ module.exports = (function(){
     iplus = i + 1;
     return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollow;
   };
-
+  /**
+   * Checks availability of final params file name.
+   * If the one being presummed is already  available
+   * the digit preceded '_params.json' part will be increased by one
+   * @param {string} pathTesting - full path of params-file testing including
+   *     file name and extension
+   * @return {string} name chosen
+   */
   polO.checkParamsFileName = function(pathTesting){
     while( fs.existsSync(pathTesting)){
       pathTesting  = polO.increasDigitInPath(pathTesting,"_params.json");
@@ -948,13 +935,14 @@ module.exports = (function(){
    * tests current module
    */
   polO.test = function(){
-    var fromFile, mode, path, prefixTo;
+    var fromFile, mode, path, prefixTo, label;
     path = "j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes";
     // output directory prefix
     prefixTo = ""+
       "j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codesRf_";
     // absolute path and filename
     fromFile = path + "\\" + "smsCikPostCallHandle_Scripts.json";
+    label = 'Tests proj-offliner polO.test()';
     if(0){
     // -- evoking js files from json testing modes --
     // rf - mode
@@ -973,7 +961,7 @@ module.exports = (function(){
     // assembling tests
     if(0){
       // location of asp-filess edited
-      var pathFromSuffix = "ChxS0s";
+      var pathFromSuffix = "46SkrH"; // need to write actual one
       var pathFrom = prefixTo + pathFromSuffix;
       polO.assembleProjFile(label,fromFile,pathFrom);
     }
@@ -996,7 +984,7 @@ module.exports = (function(){
    * @param {string}act - action parameter
    * @param {string}fromFile - original json file from which scripts of
    *     asp-filess are extracted
-   * @param {object}exp - exporter object of external scope
+   * @param {object}exp - exporter object of external scope (polO)
    * @param {string}opt_PrefixTo - prefixTo parameter set which is opt_prefixTo
    *     inside calling function
    * @return {string} prefixTo value string as absolute path
@@ -1164,7 +1152,7 @@ module.exports = (function(){
        * pathFrom parameter. When parameters are returned from params file or
        * from object options the probability exists that pathTo === pathFrom
        * and prefixTo is set and yet RegExp(prefixTo).test( pathTo ) === true
-       * at this case at pol.run call is rational to assign pathFrom value to
+       * at this case at polO.run call is rational to assign pathFrom value to
        * prefixTo method's argument (pathFrom occupies the sit of prefixTo).
        */
       pathFrom = opt_pathFrom || opt_prefixTo || polO.pathFrom ;
@@ -1638,7 +1626,7 @@ module.exports = (function(){
     }else if(opt_act === 'o'){
       if( typeof opt_fromFile !== 'object'){
         throw 'Something is wrong! Action parameter = \'o\' but\n'+
-            'second argument of method pol is not an Object!';
+            'second argument of method polO is not an Object!';
       }
       //  paramsObject case (3)
       options = opt_fromFile;
@@ -1652,8 +1640,6 @@ module.exports = (function(){
         throw '\'f\' action parameter but absent or incorrect'+
               ' params-json-file:\n'+ opt_fromFile;
       }
-    }else{
-      return;
     }
     return options;
   };
@@ -1684,22 +1670,22 @@ module.exports = (function(){
   };
   /**
   * calculating parameters are passed to .run call through
-  *  polO object - for.ex. -    pol.act, pol.fromFile, ...
+  *  polO object - for.ex. -    polO.act, polO.fromFile, ...
   *
   * The verification that this is the case presumes that
-  * before any call of pol.run method parameters being
+  * before any call of polO.run method parameters being
   * polO's properties should have been reset by
   * polO.resetPars(polO) - method.
   * After that reset user may wish to use
   * polO.run() call without parameters passing necessary
-  * parameters through pol object preliminarily.
+  * parameters through polO object preliminarily.
   * Different action parameter values demand different parameters sets:
   * 'act', 'label' and 'fromFile' - are set obligatorily for any nonDefault
   * runs.
   * 'label' may be omitted but this is not recommended.
   * 'act' may have default value 'e'/
-  * So the presence of not empty pol.fromFile indicates
-  * that 'pol object is used to pass parameters to run method' Case.
+  * So the presence of not empty polO.fromFile indicates
+  * that 'polO object is used to pass parameters to run method' Case.
   *
   * Critical parameters for determined action:
   * act='e'     : fromFile, prefixTo, pathTo.
@@ -1709,7 +1695,7 @@ module.exports = (function(){
   * act = 'ato' : fromFile, pathFrom, assFileName, outputFile
   *
   * fromFile - gear. Possible scenarios:
-  * - pass parameters through pol object's properties
+  * - pass parameters through polO object's properties
   * - all default case or
   * - standard case with testing act 'e' and parameters preset
   *
@@ -1833,25 +1819,25 @@ module.exports = (function(){
         }
       }else{
         // possible scenarios
-        // - pass parameters through pol object's properties
+        // - pass parameters through polO object's properties
         // - all default case or
         // - standard case with testing act
 
         if( polO.fromFile ){
          /** calculating parameters are passed to run call through
-          *  polO object - for.ex. -    pol.act, pol.fromFile, ...
+          *  polO object - for.ex. -    polO.act, polO.fromFile, ...
           * The verification that this is the case presumes that
-          * before any call of pol.run method
+          * before any call of polO.run method
           * polO's parameters properties should have been reset by
           * polO.resetPars(polO) - method. After that reset user may wish to use
           * polO.run() call without parameters passing necessary
-          * parameters through pol object preliminarily.
+          * parameters through polO object preliminarily.
           * Different action parameter values demand different parameters sets:
           * act, label and fromFile - are set obligatorily for any nonDefault
           * runs.  label may be omitted but this is not recommended.
           * act may have default value 'e'/
-          * So the presence of not empty pol.fromFile indicates
-          * that 'pol object is used to pass parameters to run method' Case.
+          * So the presence of not empty polO.fromFile indicates
+          * that 'polO object is used to pass parameters to run method' Case.
           * Critical parameters for determined action:
           * act='e' : fromFile, prefixTo, pathTo.
           * others could have default values
@@ -1882,7 +1868,7 @@ module.exports = (function(){
     }else if(opt_act === 'o'){
       if( typeof opt_fromFile !== 'object'){
         throw 'Something is wrong! Action parameter = \'o\' but\n'+
-            'second argument of method pol is not an Object!';
+            'second argument of method polO is not an Object!';
       }
       //  paramsObject case (3)
       options = opt_fromFile;
@@ -2000,7 +1986,7 @@ module.exports = (function(){
     polO.work(label,polO.act);
   };
   /**
-   * returns outputFile value depend of the values of other
+   * returns outputFile value depend on the values of other
    * parameters
    * @param {string}opt_Act
    * @param {string}opt_FromFile
@@ -2046,7 +2032,7 @@ module.exports = (function(){
     }
   };
   /**
-   * returns outputFile value depend of the values of other
+   * returns outputFile value depend on the values of other
    * parameters
    * @param {string}opt_Act
    * @param {string}opt_FromFile
@@ -2307,7 +2293,7 @@ module.exports = (function(){
     exp.no6 = false;
   };
   /**
-   * launches pol-methods with different parameters values over
+   * launches polO-methods with different parameters values over
    * specified timeout period to exclude traffic jam
    * @param {string}opt_label - the label or id of project being handled
    * @param {number}opt_t timeout delay in millisecond. Default=10000
@@ -2327,18 +2313,25 @@ module.exports = (function(){
         (typeof opt_t !== 'number' )){
       throw 'being set first parameter should be a number of milliseconds';
     }
-    var t= ( opt_t || opt_t === 0 )? opt_t : 10000 ;
-    var a1 = opt_first || '';
-    var a2 = opt_second || '';
-    var a3 = opt_third || '';
-    var a4 = opt_fourth || '';
-    var a5 = opt_fifth || '';
-    var a6 = opt_sixth || '';
-    var a7 = opt_seventh || '';
+    var t = (polO.timeLag === 0) ? 0 : polO.timeLag;
+    polO.timeLag +=  ((opt_t )? opt_t : 10000 );
+
+    var arg = [1,2,3,4,5,6,7];
+
+    arg[0] = opt_first || '';
+    arg[1] = opt_second || '';
+    arg[2] = opt_third || '';
+    arg[3] = opt_fourth || '';
+    arg[4] = opt_fifth || '';
+    arg[5] = opt_sixth || '';
+    arg[6] = opt_seventh || '';
+    arg.forEach((e,i)=>{console.log(i+' -> ' + e);});
+    console.log('t=%s',t);
+
     setTimeout( function(){
                 polO.resetPars(polO);
                 polO.label = label;
-                polO.run(label,a1,a2,a3,a4,a5,a6,a7);
+                polO.run(label,arg[0],arg[1],arg[2],arg[3],arg[4],arg[5],arg[6]);
                },t);
   };
   /**
@@ -2570,6 +2563,7 @@ module.exports = (function(){
 
       pthFrm = require(fFString).pathFrom;
       outF = path.join( pthFrm, '/'+assFN+'.json');
+
       console.log(label);
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
 
