@@ -521,7 +521,7 @@ module.exports = (function(){
    *   variables.)
    */
   polO.assembleProjFile = function(
-      label,opt_fromFile, opt_pathFrom, opt_assFileName, opt_outputFile){
+      label, opt_fromFile, opt_pathFrom, opt_assFileName, opt_outputFile){
     console.log( '\n\nInside assembleProjFile\n'+
         '\n------vvvvvv------\n' +
         'opt_fromFile =\n%s\n'+
@@ -1522,12 +1522,13 @@ module.exports = (function(){
         }catch(e){
           console.log(e);
           console.log('Bad json-string in file fromFile =\n%s', abs);
-          throw 'Bad json-string in file fromFile =\n' + abs;
+          throw 'Bad json-string in file fromFile = ' + abs;
         }
       }
     }else{
-      throw 'opt_fromFile is not json-file or has bad name:\n' +
-            opt_fromFile + '\n or bad data';
+      
+      throw 'opt_fromFile is not json-file or has bad name: "' +
+            rel + '" or bad data';
     }
     return true;
   };
@@ -1633,7 +1634,7 @@ module.exports = (function(){
           require.resolve( './params/' + opt_fromFile + '_params.json')];
       }else{
         throw '\'f\' action parameter but absent or incorrect'+
-              ' params-json-file:\n'+ opt_fromFile;
+              ' params-json-file --> "' + opt_fromFile +'"';
       }
     }
     return options;
@@ -1717,8 +1718,8 @@ module.exports = (function(){
       act = 'e';
       options = {label: 'evoke only - fromFile passed by polO.fromFile', act: 'e'};
     }else{
-      throw 'fromFile is not json file or has bad name:\n' +
-            opt_fromFile;
+      throw 'fromFile is not json file or has bad name --> "' +
+            opt_fromFile + '"';
     }
     return options;
   };
@@ -2336,7 +2337,7 @@ module.exports = (function(){
    */
   polO.workTest = function(){
     var o, pFN, label,
-    tau = 2500, act,
+    tau = 5000, act,
     fFString,
     fF,
     pthFr, pthTo, pxTo, assFN, outF ;
@@ -2453,7 +2454,7 @@ module.exports = (function(){
       console.log(label);
       polO.runLauncher( label,tau,'0'); //polO.run('0');
     }
-    if(0){
+    if(1){
       //  test (4-e) fF - set pxT - set
       label = 'TEST fromFile set and prefixTo set case (4- f->e)';
       console.log(label);
@@ -2547,7 +2548,7 @@ module.exports = (function(){
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
 
     }
-    if(1){
+    if(0){
       //  test a fF pthFr(pxTo) outF  - set
       label = '5_ato_TEST_fromFile_outF_set_pathFrom_at_site';
       //fromFile
@@ -2562,7 +2563,7 @@ module.exports = (function(){
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
 
     }
-    if(1){
+    if(0){
       //  test a fF pthFr(pxTo) outF  - set
       label = '6_ato_TEST_fromFile_outF_set_pathFrom_at_pxTo sit';
       //fromFile
