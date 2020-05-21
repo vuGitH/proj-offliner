@@ -1,18 +1,20 @@
 # proj-offliner package
 
-    +----------+    +-----------+    +------------+    +--------------+
-    | extracts |    | writes    |    | modifies   |    | assembles    |
-    | js-files |    | them      |    | them       |    | new json file|
-    | form     | -> | into      | -> | manually   | -> | using        |
-    | json file|    | directory |    | or         |    | js-files     |
-    | specified|    | specified |    | on the fly |    | modified     |
-    +----------+    +-----------+    +------------+    +--------------+
+    +-----------+    +-----------+    +------------+    +--------------+
+    | extracts  |    | writes    |    | modifies   |    | assembles    |
+    | asp-files |    | them      |    | them       |    | new json file|
+    | form      | -> | into      | -> | manually   | -> | using        |
+    | json file |    | directory |    | or         |    | asp-files     |
+    | specified |    | specified |    | on the fly |    | modified     |
+    +-----------+    +-----------+    +------------+    +--------------+
                           |                                  |
                           v                                  v
                     +-----------+                      +-------------+
                     |   show    |                      |    show     |
                     |  results  |                      |   results   |
                     +-----------+                      +-------------+
+
+abreviation _'asp-file[s]'_ used above and bellow means _'Apps Script Project's file[s] extracted'_
 
 ## Why
 
@@ -22,15 +24,15 @@ containing full info regarding project's files substructure, their names and
 sources' contents.
 
 This `proj-offliner` module permits to convert json-file downloaded into
-separate JavaScript-files (js-files) with '.js' extensions having appropriate
+separate JavaScript-files (asp-files) with '.js' extensions having appropriate
 names got from json file data ( obj.files[i].name , where obj - is an object
 got after parsing by JSON.parse json-file string; files - is property array,
 each element of which devoted to an appropriate project's content file.
 
-Module creates temporary folder and populates it by newly extracted js-files
+Module creates temporary folder and populates it by newly extracted asp-files
 or could extract those files into specified directory.
 
-After appropriate edition completed the package assembles js-files modified
+After appropriate edition completed the package assembles asp-files modified
 into new json project file ready for uploading.
 
 ## Installation
@@ -69,14 +71,14 @@ called by
     npm run pol
 
 command with arguments and executes
-or evocation of js-files into temporary directory
+or evocation of asp-files into temporary directory
 
     npm run pol e fromFile ...
 
 or
 
-assembly of new modified json-file created from js-files content modified
-taken from temporary folder where they(js-files) were stored -
+assembly of new modified json-file created from asp-files content modified
+taken from temporary folder where they(asp-files) were stored -
 
     npm run pol a fromFile pathFrom ...
 
@@ -116,7 +118,7 @@ Variables and object properties' names using bellow in the context:
 
     fromFile - full path of initial json file handling (initially is presumed
         being appScript project file downloaded. )
-    pathTo - path of the folder wherein js-files extracted form fromFile
+    pathTo - path of the folder wherein asp-files extracted form fromFile
         will be stored in. (Could be assigned by user manually or will be
         generated from prefixTo path string appending 6 random characters
         for each run.
@@ -163,7 +165,7 @@ action parameter
 are equivalent to **npm run e fromFile prefixTo** , where
 
     arg2 = 'e' ;   - action parameter value that indicates that the action is
-        evoking ( or extracting) js-files from object parsed from original
+        evoking ( or extracting) asp-files from object parsed from original
         json-file fromFile of previously downloaded appScript project's file
         (.json)
 
@@ -217,7 +219,7 @@ In expample (4) -
 
     prefixTo - as string 'disk:\\path\\to\\the\\dirNamePrefix_'
         as a result of execution data will be extracted and
-        js-files will be saved into the temporary folder  
+        asp-files will be saved into the temporary folder  
         'disk:\\path\\to\\the\\dirNamePrefix_XXXXXX' ,
         where XXXXXX are six random alpha numerical characters.
 
@@ -368,8 +370,8 @@ So if you would have set them before pol.run call
     pol.act = 'someAct';
     pol.fromFile = 'some full path of initial json file handling';
     pol.prefixTo = 'some template path to form path of temporary folder';
-    pol.pathTo = 'exact folder path where to reside extracting js-files';
-    pol.pathFrom = 'some path of folder where to take js-files modified';
+    pol.pathTo = 'exact folder path where to reside extracting asp-files';
+    pol.pathFrom = 'some path of folder where to take asp-files modified';
     pol.assFileName = 'assembly file name in pathFrom without' +
       ' extension .json to be used';
     pol.outputFile = 'full path of assembly file to be used';
@@ -441,14 +443,14 @@ assembly etc.) depends on the number, the types and the values of method's argum
     act - action type parameter
     fromFile - full path of json file of appScript project downloaded
             (including file name with extension)
-    pathTo - path of the folder wherein js-files extracted from fromFile
+    pathTo - path of the folder wherein asp-files extracted from fromFile
             will be stored into. (Could be assigned by user manually by
             setting pol.pathTo property)
     prefixTo - part of pathTo path to which six random alphanumerical
             characters will be appended to get new pathTo value
             or in details
             {string}  prefix of the path to temporary directory wherein you are
-            going to store js-files extracting. Six random character will be
+            going to store asp-files extracting. Six random character will be
             added to this prefix to determine full directory name. This
             parameter is Optional. If prefixTo is not set the module uses path
             to downloaded fromFile and fromFileName+'_' as prefix.
@@ -495,8 +497,8 @@ First argument's values vs meaning & functionality (act - action parameter):
     'f' - same as 'o' but object will be get from json file locating into
           __dirname + sep +'params' folder; where sep is OS paths separator
     'ea' - 'e'voke and then 'a'ssemble (default) using in test run and
-             at chaining processes like auto lint of js-files codes
-    'eto' - evoking js-files extracted from fromFile and write them into
+             at chaining processes like auto lint of asp-files codes
+    'eto' - evoking asp-files extracted from fromFile and write them into
           pathTo path of folder specified by user
     'ato' - assembles project's data into specified json file
 
@@ -555,9 +557,9 @@ Calling examples:
                 Attention remark! - content of json-file json string must not
                 contain line brakes special characters.
 
-        'e'- evokes js-files from fromFile into new prefixToXXXXX -directory<br>
+        'e'- evokes asp-files from fromFile into new prefixToXXXXX -directory<br>
             call ex.: pol.run('e',fromFile,prefixTo) (7)<br>
-        'eto'- evokes js-files from fromFile into user defined pathTo directory<br>
+        'eto'- evokes asp-files from fromFile into user defined pathTo directory<br>
             call ex.:<br>
                 pol.run('eto',fromFile,pathTo);  (8)
 
@@ -575,7 +577,7 @@ Calling examples:
         'erf' - technical evoking mode using algorithm of direct content
                 reading of json file (only for information. details see in
                 code description) to get the object whose properties contain
-                js-files data
+                asp-files data
 
 Defaults:
 
@@ -590,21 +592,21 @@ prefixTo = __dirname + '\\test\\out\\pathTo_';
 pathFrom = __dirname + '\\test\\pathFrom';
 ```
 
-### Evoking js-files
+### Evoking asp-files
 
-To extract separate `js-files` of your project from `AppScript` project
+To extract separate `asp-files` of your project from `AppScript` project
 json file downloaded you need to invoke `proj-offliner` package installed  
 locally inside your module using modeling calls for action  
 parameter `'e'` or `'eto'` presenting here. The `pol.run` method is wrapper  
 of engine for evocation
 
 ```javascript
-pol.evokeJsFiles(label,fromFile,opt_prefixTo,opt_act,opt_mode);
+pol.evokeAspFiles(label,fromFile,opt_prefixTo,opt_act,opt_mode);
 ```
 
-### Remark regarding specified folder for extracted js-files
+### Remark regarding specified folder for extracted asp-files
 
-In the case of when you would prefer to place js-files extracted in specified  
+In the case of when you would prefer to place asp-files extracted in specified  
 directory on your choice ( for ex. whose name doesn't contain 6 random  
 characters at the end) the usage is as follows:
 
@@ -619,7 +621,7 @@ characters at the end) the usage is as follows:
 
 ### Assemble results
 
-After possible edition and/or modification of js-files, extracted previously  
+After possible edition and/or modification of asp-files, extracted previously  
 from project json-file, you could prefer to assemble resulting `AppScript`  
 project json-file for uploading it into your Google project on Google Drive  
 later . The `pol.run` method is the wrapper of the method `assembleProjFile`  

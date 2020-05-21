@@ -100,9 +100,9 @@
  * containing full info regarding project's files substructure their names
  * and sources contents.
  * This module permits to get jsonFileDownloaded and to convert them in
- * separate js-files named file[i].name with '.js' extensions.
+ * separate asp-files named file[i].name with '.js' extensions.
  * Module creates temporary folder and populates it by newly extracted
- * js-files.
+ * asp-files.
  * Usage:
  * to install proj-offliner globally:
  * npm install  - g proj-offliner
@@ -125,7 +125,7 @@
  * {string}fromFile - full path to downloaded json-file including
  *     file name
  * {string}pathToPrefix - prefix of path to temporary directory where to
- *     store js-files. Six random character will be added to this prefix to
+ *     store asp-files. Six random character will be added to this prefix to
  *     set full directory name. Optional. If this prefix is not set the
  *     module use path to downloaded file and fileName+'_files' as prefix
  * {string}mode - parameter specifying extraction procedure details. Don't
@@ -141,7 +141,7 @@
  * pol.evokeJsFiles();
  *
  * Option 3.
- * In the case you prefer to place js-files in specified directory
+ * In the case you prefer to place asp-files in specified directory
  * ( whose name doesn't contain 6 random characters at the end) the
  * usage is as follows:
  * @example
@@ -166,12 +166,12 @@ exports.readMe = "\n\n" +
   'json file containing full info regarding project\'s files substructure \n' +
   ', their names and sources contents.\n' +
   'This `proj-offliner` module permits to get jsonFileDownloaded and to\n' +
-  'convert it into separate js-files named file[i].name with \'.js\'\n' +
+  'convert it into separate asp-files named file[i].name with \'.js\'\n' +
   'extensions. Where file[i] means i-th file in a set of files forming\n' +
   'appScript\'s project.\n' +
   '\n' +
   'Module creates temporary folder and populates it by newly extracted\n' +
-  'js-files or could extract resulted files into specified directory.\n' +
+  'asp-files or could extract resulted files into specified directory.\n' +
   '\n' +
   'Usage:\n' +
   'To install `proj-offliner` globally:\n' +
@@ -194,7 +194,7 @@ exports.readMe = "\n\n" +
   '{string} fromFile  -  full path to json file downloaded\n' +
   '    (including file name)\n' +
   '{st1ring} pathToPrefix - prefix of path to temporary directory where to\n' +
-  '    store js-files. Six random character will be added \n' +
+  '    store asp-files. Six random character will be added \n' +
   '    to this prefix to set full directory name. \n' +
   '    Optional. If this prefix is not set the module use path to downloaded\n' +
   '    file and fileName + "_files" as prefix\n' +
@@ -208,7 +208,7 @@ exports.readMe = "\n\n" +
   '    pol.evokeJsFiles();\n' +
   '\n' +
   'Option 3.\n' +
-  'In the case you prefer to place js-files in specified directory\n' +
+  'In the case you prefer to place asp-files in specified directory\n' +
   '( whose name doesn\'t contain 6 random characters at the end) the\n' +
   'usage is as follows:\n' +
   '\n' +
