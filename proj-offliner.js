@@ -65,14 +65,20 @@ module.exports = (function(){
   /**
    * separates json file name from path
    * @param {string}fPath
-   * @return {object|boolean=false} false if file is not json-file
-   *   @property{string} o.fnm file name
-   *   @property{string} o.path file path
+   * @return {Object|boolean} false if file is not json-file
+   *   @property {string} o.fnm file name
+   *   @property {string} o.dir file path
+   *   @property {string} o.ext file extension
    */
   polO.separatePathAndFileName = function(fpath){
+    if((typeof fpath !== 'string') ||
+       (path.extname(fpath) !== '.json')){
+         return false;
+       }
     return {
       fnm: path.basename(fpath),
-      path: path.dirname(fpath)
+      dir: path.dirname(fpath),
+      ext: path.extname(fpath)
     };
   };
   /**
@@ -80,22 +86,23 @@ module.exports = (function(){
    * comprising of path to file's host folder and file name without extension
    * which could be used or as pathTo directory during js - files extraction
    * from json file or for new file path at assembling new json file
-   * @param {string} fp - full path to json file including file name
-   * @return {string} path to subdirectory named as fileName without
+   * @param {string} fp - full path to json file including the file name
+   * @return {string|Boolean} path to subdirectory named as fileName without
    * extension
    */
   polO.fileNameToPath = function (fp){
+
     var o, prfx;
     var sp = polO.sep;
     o = polO.separatePathAndFileName(fp);
     prfx = o.fnm ? o.fnm.replace(/\.json$/,''):"";
-    if(/\//.test(o.path)){
-      return prfx? o.path+'/' + prfx : "";
-    }else if(/\\/.test(o.path)){
-      return prfx? o.path+'\\' + prfx : "";
+    if(/\//.test(o.dir)){
+      return prfx? o.dir+'/' + prfx : "";
+    }else if(/\\/.test(o.dir)){
+      return prfx? o.dir+'\\' + prfx : "";
     }else{
       if(prfx){
-        return (o.path)? o.path + sp + prfx :"";
+        return (o.dir)? o.dir + sp + prfx :"";
       }
       return "";
     }
@@ -103,6 +110,7 @@ module.exports = (function(){
   /**
    * creates new subdirectory(-ies) if path contains nonexistent ones
    * @param {string}pth of directory (probably nonexistent)
+   * @return {void}
    */
   polO.preparePath = function(pth){
     var sub, dnm;
@@ -159,19 +167,19 @@ module.exports = (function(){
      * - if opt_prefixTo is not set checks polO.prefixTo
      * - if polO.prefixTo is not set, file name of fromFile without
      * extension is used as prefixTo and the directory with name
-     * <prefixTo>XXXXXX will be created inside host folder of fromFile and
+     * <prefixTo>XXXXXX will be created inside fromFile's host folder and
      * will be assigned as pathTo for asp-filess being going to be extracted
      * will have been placed there.
      * XXXXXX - 6 random alphanumerical characters
-     * - in the case when it's necessary to use some path specified as pathTo
+     *
+     * - in the case when it's necessary to use some path specified as -pathTo-
      * parameter without appending six random characters to the name of folder
-     * the following rules should be followed by:
+     * the following Rules should be followed by:
      * 1. property polO.no6 should be set true and
      * 2. polO.prefixTo as well as opt_prefixTo should be empty string ''.
-     * 3. The value of pathTo is taken from polO.pathTo property (or from
-     *    opt_prefixTo when opt_act parameter ='eto' )
-     * 4. if the folder with path pathTo does not exist it will be created.
-     *
+     * 3. The value of pathTo is taken from polO.pathTo property  when
+     *    opt_act parameter ='eto'
+     * 4. if the folder with path -pathTo- does not exist it will be created.
      */
     var prefixTo = opt_prefixTo ||
         polO.prefixTo ||
@@ -425,13 +433,13 @@ module.exports = (function(){
    * after last underscore is not digital
    * nothing is changed and original file name will be returned
    * @param {string} pth path tested
-   * @param {string} strPartFollow string part before wich digit
+   * @param {string} strPartFollows string part before wich digit
    *   is checked and increased by one if any
    */
-  polO.increasDigitInPath = function(pth, strPartFollow){
+  polO.increaseDigitInPath = function(pth, strPartFollows){
     var nm, a, lastPrt, i, iplus;
     var digsPtt = /[0-9]+/;
-    var patt = new RegExp(strPartFollow);
+    var patt = new RegExp(strPartFollows);
     nm = pth.replace(patt,'');
     a = nm.split('_');
     lastPrt = a[a.length - 1];
@@ -440,11 +448,11 @@ module.exports = (function(){
     }
     i = parseInt(lastPrt);
     iplus = i + 1;
-    return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollow;
+    return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollows;
   };
   /**
    * Checks availability of final params file name.
-   * If the one being presummed is already  available
+   * If the one being presummed is already available
    * the digit preceded '_params.json' part will be increased by one
    * @param {string} pathTesting - full path of params-file testing including
    *     file name and extension
@@ -452,7 +460,7 @@ module.exports = (function(){
    */
   polO.checkParamsFileName = function(pathTesting){
     while( fs.existsSync(pathTesting)){
-      pathTesting  = polO.increasDigitInPath(pathTesting,"_params.json");
+      pathTesting  = polO.increaseDigitInPath(pathTesting,"_params.json");
     }
     return pathTesting;
   };
@@ -489,16 +497,16 @@ module.exports = (function(){
 
   /**
    * 'assembleFileRedy' event emitter
-   * Assembles scripts content of asp-filess modified into json file
-   * prepared to uploading it to Google appScript project.
-   * @param {string}label identifier of project being handled
-   * @param {string}opt_fromFile  (originalJsonFileDownloaded) full file path of
+   * Assembles scripts content of asp-files modified into json file
+   * prepared to uploading it to Google Drive AppsScript project.
+   * @param {string} label identifier of project being handled
+   * @param {string} opt_fromFile  (originalJsonFileDownloaded) full file path of
    *    original Google project json file downloaded from GoogleDrive
-   * @param {string}opt_pathFrom path to the destination folder for output
-   *     json file. This is the same folder where asp-filess modified,
-   *     obtain from original json file, are placed earlier and appropriately
+   * @param {string} opt_pathFrom path to the destination folder for output
+   *     json file. This is the same folder where asp-files modified,
+   *     obtained from original json-file, were placed earlier and appropriately
    *     are taken from.
-   * @param {string}opt_assFileName output json file name to be written.
+   * @param {string} opt_assFileName output json file name to be written.
    *    Optional. By default name is
    *    <originalJsonFileDownloadedWithoutExtention> + "_modified_N.json"
    *    where N after 'modified_' is string number showing the version of
@@ -522,11 +530,12 @@ module.exports = (function(){
    */
   polO.assembleProjFile = function(
       label, opt_fromFile, opt_pathFrom, opt_assFileName, opt_outputFile){
-    console.log( '\n\nInside assembleProjFile\n'+
+    console.log(
+        '\n\nInside assembleProjFile\n'+
         '\n------vvvvvv------\n' +
-        'opt_fromFile =\n%s\n'+
+        'opt_fromFile =\n%s\n' +
         'opt_pathFrom =\n%s\n' +
-        'opt_assFileName =\n%s\n'+
+        'opt_assFileName =\n%s\n' +
         'opt_outputFile =\n%s\n' +
         'label = %s' +
         '\n------^^^^^^------\n',
@@ -535,64 +544,103 @@ module.exports = (function(){
         opt_assFileName,
         opt_outputFile,
         label);
-    // outputFile - user predefined full path of output file
+
+    /** @proprety {string} outputFile user predefined full path of output file*/
     var outputFile = opt_outputFile || polO.outputFile;
-    var pathFrom;
-    var fromFile =  opt_fromFile || polO.fromFile || "";
+    var fromFile =  opt_fromFile || polO.fromFile;
+    var fromFileCopy;
+
     polO.fromFile = fromFile;
     if(!fromFile){
-      throw 'assembleProjFile: original json file has not been set';
+      throw 'in assembleProjFile: original json file has not been set';
     }
     polO.assemble = true;
 
-    var oFP, outFileName, outPath, fromFileCopy,
-        sp = polO.sep;
-
-    oFP = polO.separatePathAndFileName(fromFile);
-    pathFrom = opt_pathFrom ?
-              opt_pathFrom :
-              (polO.pathFrom ? polO.pathFrom : oFP.path);
-
-    if( !outputFile){
-
-      outFileName  = ( function(){
-          if(opt_assFileName){
-            if( !/\.json$/.test(opt_assFileName)){
-              return opt_assFileName + '.json';
-            }else{
-              return '';
-            }
-          }else if(polO.assFileName){
-            return polO.assFileName + '.json';
-          }else{
-            return oFP.fnm.replace(/\.json$/,'')+'_modified.json';
-          }
-      }());
-
-      outPath = pathFrom;
-      polO.preparePath(outPath);
-      fromFileCopy = !outFileName ?
-                   opt_assFileName : outPath + sp + outFileName;
-    }else{
-      outPath = path.dirname(outputFile);
-      polO.preparePath(outPath);
-      fromFileCopy = outputFile;
+    fromFileCopy = polO.assfile(opt_fromFile, opt_pathFrom, opt_assFileName,
+                                opt_outputFile);
+    if(!fromFileCopy){
+      throw "assemble file predecessor can't be set";
     }
     fs.copyFile(fromFile, fromFileCopy, function(err){
       if(err){
         throw(err);
       }
-      // emits assembleFileReady event
       console.log('\n\nBefore assembleFileReady event emit \n' +
-          'outPath=\n%s\n'+
           'pathFrom=\n%s\n' +
           'fromFileCopy=\n%s',
-          outPath,
-          pathFrom,
-          outputFile);
+          (opt_pathFrom ? opt_pathFrom :
+                          ((polO.pathFrom) ? polO.pathFrom : 'unKnown')),
+          fromFileCopy);
+      // emits assembleFileReady event
       polO.myEE.emit('assembleFileReady',label, fromFileCopy,
                      pathFrom, outputFile,'req');
     });
+  };
+  /**
+   * determines out assemble file's full path, file name and
+   * file parent directory using actual parameters and
+   * project rules used.
+   * if necessary copies fromFile into assFile
+   * directory assigned
+   * @param {string} opt_fromFile
+   * @param {string} opt_pathFrom
+   * @param {string} opt_assFileName
+   * @param {string} opt_outputFile
+   * @return {string} presumed output assemble file full path
+   */
+  polO.assfile = function(opt_fromFile, opt_pathFrom, opt_assFileName,
+                          opt_outputFile){
+    var oFP,
+        outFileName,
+        outPath,
+        sp = polO.sep,
+        fromFile,
+        outputFile,
+        af;
+
+    /* @proprety {string} outputFile user defined full path of ass file */
+    outputFile = opt_outputFile || polO.outputFile;
+    if(outputFile){
+      return outputFile;
+    }
+
+    // original input file full path
+    fromFile =  opt_fromFile || polO.fromFile || undefined;
+    oFP = (fromFile) ? polO.separatePathAndFileName(fromFile) : null;
+
+    // path of output file derived from algorithm used
+    outPath = opt_pathFrom ?
+              opt_pathFrom :
+              (polO.pathFrom ? polO.pathFrom : undefined);
+                             // ((oFP)? oFP.dir : undefined));
+    if(outPath){
+      // creates outPath directory if it not exists
+      polO.preparePath(outPath);
+    }else{
+      throw "can't to determine assemble file directory!";
+      //return null;
+    }
+    // opt_assFileName,
+    var oaFN = opt_assFileName,
+        paFN = polO.assFileName;
+
+    outFileName  = ( function(){
+        if(oaFN){
+          return (!/\.json$/.test(oaFN)) ? oaFN + '.json' : oaFN;
+        }else if(paFN){
+          return (/\.json$/.test(paFN)) ? paFN : paFN + '.json';
+        }else if(oFP){
+          return oFP.fnm.replace(oFP.ext,'') + '_modified_0.json'; // file name
+        }else{
+          return undefined;
+        }
+    }());
+    if(!outFileName){
+      return false;
+    }
+    af = outPath + sp + outFileName;  // full path
+    // check availabilty and increases digital part if any
+    return polO.checkAssFileName(af);
   };
   /**
    * 'assembleFileReady' event listener
@@ -874,7 +922,7 @@ module.exports = (function(){
             err+'\nwhile attempting to write finally assembled json - file');
         }else{
           // output file is written successfully
-          outPth = polO.separatePathAndFileName(outputFile).path;
+          outPth = path.dirname(outputFile);
           console.log('Assembly has finished\noutput file:\n%s\n' +
           'json-file has been written into folder outPth =\n%s\n' +
           'label = %s\n',
@@ -907,8 +955,9 @@ module.exports = (function(){
   };
   /**
    * Checks availability of final assemble file name.
-   * If presumed one is already  available
-   * last digit of the name string increased by one
+   * If presumed one is already available
+   * last digit of the name string is increased by one.
+   * It's cosidered the digit betwin extention and last underscore sign.
    * Nothing is changed if file name has no digital part before .json
    * extension
    * @param {string} pathTesting
@@ -917,7 +966,7 @@ module.exports = (function(){
   polO.checkAssFileName = function(pathTesting){
     var tempNm = pathTesting;
     while( fs.existsSync(pathTesting)){
-      pathTesting = polO.increasDigitInPath(pathTesting,".json");
+      pathTesting = polO.increaseDigitInPath(pathTesting,".json");
       if(tempNm === pathTesting){
         break;
       }
@@ -985,18 +1034,18 @@ module.exports = (function(){
    * @param {string}fromFile - original json file from which scripts of
    *     asp-filess are extracted
    * @param {object}exp - exporter object of external scope (polO)
-   * @param {string}opt_PrefixTo - prefixTo parameter set which is opt_prefixTo
+   * @param {string}opt_prefixTo - prefixTo parameter set which is opt_prefixTo
    *     inside calling function
    * @return {string} prefixTo value string as absolute path
    */
-  polO.getPrefixTo = function(act,fromFile,exp,opt_PrefixTo){
+  polO.getPrefixTo = function(act,fromFile,exp,opt_prefixTo){
 
     var fF, dFF, sep = this.sep;
     if(act === 'eto'){
       return '';
     }else{
-      if(opt_PrefixTo){
-        return  exp.absPath(opt_PrefixTo)  ;
+      if(opt_prefixTo){
+        return  exp.absPath(opt_prefixTo)  ;
       }else if(exp.prefixTo){
         return exp.absPath(exp.prefixTo);
       }else if( fromFile || exp.fromFile ){
@@ -1021,15 +1070,15 @@ module.exports = (function(){
    * This case is appropriate to 'eto' action parameter mode for which
    * opt_prefixTo argument contains the value of pathTo parameter
    * @param {string} act action parameter
-   * @param {string} opt_PrefixTo - opt_prefixTo value in calling function
+   * @param {string} opt_prefixTo - opt_prefixTo value in calling function
    * @param {Object} exp - object of external scope (exporter)
    * @return {string}  pathTo value
    */
-  polO.getPathTo = function(act, opt_PrefixTo, exp){
-    if(act === 'eto' && opt_PrefixTo ){
+  polO.getPathTo = function(act, opt_prefixTo, exp){
+    if(act === 'eto' && opt_prefixTo ){
       exp.no6 = true;
       exp.prefixTo = '';
-      return exp.absPath(opt_PrefixTo);
+      return exp.absPath(opt_prefixTo);
     }else{
       return exp.pathTo ?
              exp.absPath(exp.pathTo) :
@@ -1463,12 +1512,11 @@ module.exports = (function(){
           '' : (act === 'eto' ? '' : polO.absPath(opt_prefixTo)),
       pathTo: (act === 'eto') ?
           polO.absPath(opt_prefixTo) : polO.absPath(polO.pathTo),
-      pathFrom: polO.getPathFrom(
-          act, fromFile, opt_prefixTo, opt_pathFrom, polO),
+      pathFrom: polO.getPathFrom( act, fromFile, opt_prefixTo, opt_pathFrom),
       assFileName: polO.getAssFileName(act, fromFile, opt_prefixTo,
                        opt_pathFrom ,opt_assFileName, opt_outputFile),
       outputFile: polO.getOutputFile(act, fromFile, opt_prefixTo,
-                       opt_pathFrom, opt_assFileName, opt_outputFile, polO)
+                       opt_pathFrom, opt_assFileName, opt_outputFile)
     };
     console.log('new options object set');
 
@@ -1526,7 +1574,7 @@ module.exports = (function(){
         }
       }
     }else{
-      
+
       throw 'opt_fromFile is not json-file or has bad name: "' +
             rel + '" or bad data';
     }
@@ -1535,8 +1583,8 @@ module.exports = (function(){
   /**
   * pre-sets options object depending on values of
    * polO.run method's arguments:
-   * @param {object|string|undefined} label first argument of method polO.run
-   * @return {object|void} options object
+   * @param {Object|string|undefined} label first argument of method polO.run
+   * @return {Object|void} options object
    */
   polO.runArg_0_1_obj_or_file = function(label,opt_act){
     var options;
@@ -1581,9 +1629,9 @@ module.exports = (function(){
   * pre-sets options object depending on values of
    * polO.run method's arguments:
    * @param {string} label first argument of method polO.run
-   * @param {object|string|undefined} opt_act second argument of method polO.run
-   * @param {object|string|undefined} opt_fromFile third argument of method polO.run
-   * @return {object|void} options object or void
+   * @param {Object|string|undefined} opt_act second argument of method polO.run
+   * @param {Object|string|undefined} opt_fromFile third argument of method polO.run
+   * @return {Object|void} options object or void
    */
   polO.runArg_1_2_obj_or_file = function(label,opt_act, opt_fromFile){
     var options;
@@ -1641,7 +1689,7 @@ module.exports = (function(){
   };
   /**
    * cases if opt_fromFile object or file
-   * @ return {object | void}
+   * @ return {Object|void}
    */
   polO.runArg_2_obj_or_file = function(label,opt_act, opt_fromFile){
     var options;
@@ -1695,7 +1743,7 @@ module.exports = (function(){
   * - all default case or
   * - standard case with testing act 'e' and parameters preset
   *
-  * @ return {object | void}
+  * @ return {Object|void}
    */
   polO.runArg_2_fromFile_gear = function(label, opt_act, opt_fromFile){
     var options;
@@ -1981,38 +2029,37 @@ module.exports = (function(){
     polO.work(label,polO.act);
   };
   /**
-   * returns outputFile value depend on the values of other
-   * parameters
-   * @param {string}opt_Act
-   * @param {string}opt_FromFile
-   * @param {string}opt_PrefixTo
-   * @param {string}opt_PathFrom
+   * returns outputFile value depends on the values of other parameters
+   * @param {string}opt_act
+   * @param {string}opt_fromFile
+   * @param {string}opt_prefixTo
+   * @param {string}opt_pathFrom
    * @return {string} value of outputFile
    */
-  polO.getPathFrom = function(opt_Act, opt_FromFile, opt_PrefixTo, opt_PathFrom){
-    var act = opt_Act,
-        fromFile = opt_FromFile,
-        prefixTo = opt_PrefixTo,
-        pathFrom = opt_PathFrom;
+  polO.getPathFrom = function(opt_act, opt_fromFile, opt_prefixTo, opt_pathFrom){
+    var act = opt_act,
+        fromFile = opt_fromFile,
+        prefixTo = opt_prefixTo,
+        pathFrom = opt_pathFrom;
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (opt_PrefixTo = '')
+        // prefix's sit is filled by empty string (opt_prefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if(/\.json$/.test(pathFrom)){
             throw 'Something is wrong:there is path of json file \n' +
                 'on pathFrom sit.';
-          }else if(!polO.isArgPathFrom(fromFile,opt_PathFrom)){
+          }else if(!polO.isArgPathFrom(fromFile,opt_pathFrom)){
             throw 'getPathFrom: incorrect value of pathFrom';
           }else{
-            return polO.absPath(opt_PathFrom);
+            return polO.absPath(opt_pathFrom);
           }
         }else{
           throw 'pathFrom is not set for \'a\' or \'ato\' action';
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
+        if( polO.isArgPathFrom(fromFile,opt_prefixTo)){
           console.log('in getPathFrom: pathFrom is sitting on opt_Prefix place');
           return polO.absPath(pathFrom);
         }else if(/\.json$/.test(pathFrom)){
@@ -2027,80 +2074,132 @@ module.exports = (function(){
     }
   };
   /**
-   * returns outputFile value depend on the values of other
+   * returns outputFile value dependent on the values of other
    * parameters
-   * @param {string}opt_Act
-   * @param {string}opt_FromFile
-   * @param {string}opt_PrefixTo
-   * @param {string}opt_PathFrom
-   * @param {string}opt_AssFileName
-   * @param {string}opt_OutputFile
+   * @param {string}opt_act
+   * @param {string}opt_fromFile
+   * @param {string}opt_prefixTo
+   * @param {string}opt_pathFrom
+   * @param {string}opt_assFileName
+   * @param {string}opt_outputFile
    * @return {string} value of outputFile
    */
   polO.getAssFileName = function(
-      opt_Act,opt_FromFile,opt_PrefixTo,opt_PathFrom,
-      opt_AssFileName,opt_OutputFile){
-    var act = opt_Act,
-        fromFile = opt_FromFile,
-        prefixTo = opt_PrefixTo,
-        pathFrom = opt_PathFrom,
-        assFileName = opt_AssFileName,
-        outputFile = opt_OutputFile;
+      opt_act, opt_fromFile, opt_prefixTo, opt_pathFrom,
+      opt_assFileName, opt_outputFile){
+    var act = opt_act,
+        fromFile = opt_fromFile,
+        prefixTo = opt_prefixTo,
+        pathFrom = opt_pathFrom,
+        assFileName = opt_assFileName,
+        outputFile = opt_outputFile;
+    var aFN, aF;  // filename, file full path
+    var argO = {};
+    argO.act = act;
+    argO.fromFile = fromFile;
+    argO.prefixTo = prefixTo;
+    argO.pathFrom = pathFrom;
+    argO.assFileName = opt_assFileName;
+    argO.outputFile = outputFile;
+    console.log('in getAssFileName: ');
+    Object.keys(argO).forEach((e)=>{console.log(e +' -> ' + argO[e]);});
+
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (opt_PrefixTo = '')
+        // prefixTo's sit is filled by empty string (opt_prefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if(/\.json$/.test(pathFrom)){
             throw 'Something is wrong:there is path of json file \n' +
-                'on pathFrom sit.';
-          }
-          if(!outputFile && !assFileName){
-            return '';
+                'on pathFrom sit. pathFrom is directory and ' +
+                'should be set obligatorily';
+          }else if(!outputFile && !assFileName){
+            // default assfile
+            return polO.assfile(fromFile, pathFrom);            
           }else if(assFileName &&
                    /\.json$/.test(assFileName) &&
                    !outputFile ){
             console.log('outputFile on assFileName sit');
-            return '';
-          }else{
-            return assFileName;
-          }
+            aF = assFileName;
+            return aF;
+          }else if(assFileName && outputFile){
+            if(path.basename(outputFile).replace(path.extname(outputFile),'') ===
+              assFileName){
+              return outputFile;
+            }else{
+              throw "assFileName doesn't match outputFile";
+            }
+          }else if(assFileName && !outputFile){
+            return polO.assfile(fromFile,pathFrom,assFileName);
+          }  
         }else{
+          // both prefixTo and pathFrom are empty or undefined
           throw 'pathFrom is not set for \'a\' or \'ato\' action';
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
-          console.log('in getAssFileName: pathFrom is sitted on opt_Prefix place');
-          if(pathFrom){
+        if( polO.isArgPathFrom(fromFile,opt_prefixTo)){
+          console.log('in getAssFileName: pathFrom is sat on opt_Prefix place');
+          if( pathFrom){
             if(/\.json$/.test(pathFrom)){
-              console.log('outputFile on pathFrom sit');
-              return '';
+              console.log('outputFile on pathFrom sit presumably');
+              aF = pathFrom;
+              return aF;
             }else{
-              return pathFrom;
+              //!!! assFileName is on place of pathFrom.
+                            aFN = pathFrom;
+                            pF = prefixTo;
+              return polO.assfile(fromFile,pF,aFN);
             }
-
           }else{
-            return '';
+            // case: pathFrom on prefixTo sit, pathFrom sit is empty, 
+            // checking of sits: assFileName and outputFileis
+            pF = prefixTo;
+            if(!assFileName && outputFile){
+              return outputFile;
+            }else if( assFileName && !outputFile){
+              if(/.json$/.test(assFileName)){
+                // ouptuFile on assFileName sit
+                return assFileName;
+              }else{
+                return polO.assfile(fromFile,pF,assFileName);
+              }              
+            }else if(assFileName && outputFile){
+              if(path.basename(outputFile).replace(path.extname(outputFile),'') ===
+                 assFileName){
+                return outputFile;
+              }else{
+                console.log("in getAssFileName:" +
+                "value of outputFile parameter doesn't match " +
+                "value of assFileName while both are set. outputFile" +
+                " is preferred");
+                return outputFile;
+              }              
+            }else{
+              // default ass File while parhFrom on prefixTo sit and
+              // (!assFileName && !outputFile)
+              pF = prefixTo;
+              return polO.assfile(fromFile,pF );
+            }
           }
-        }else if(!polO.isArgPathFrom(fromFile,opt_PathFrom)){
-          throw 'getAssFileName: incorrect value of pathFrom';
+        }else if(!polO.isArgPathFrom(fromFile,pathFrom)){
+          throw 'in getAssFileName: incorrect value of pathFrom';
         }else{
           // pathFrom is good. Looks at assFileName
           if(assFileName){
             if(/\.json$/.test(assFileName)){
-             console.log('outputFile on assFileName sit');
-              return '';
+              console.log('presumably outputFile on assFileName sit');
+              aF = assFileName; //full path
+              return aF;
+            }else if(outputFile){
+              return outputFile;
             }else{
-              return assFileName;
+              return polO.assfile(fromFile,pathFrom,assFileName);
             }
-
-          }else{
-            return '';
           }
         }
       }
-    }else{
+     }else{
       console.log( 'assFileName parameter is set for Non \'a\' cases?!');
       return assFileName;
     }
@@ -2109,26 +2208,38 @@ module.exports = (function(){
    * returns outputFile value depending on the presence and values of
    * method's arguments and values of other managing parameters inside calling
    * function or method
-   * @param {string}opt_Act
-   * @param {string}opt_FromFile
-   * @param {string}opt_PrefixTo
-   * @param {string}opt_PathFrom
-   * @param {string}opt_AssFileName
-   * @param {string}opt_OutputFile
+   * @param {string}opt_act
+   * @param {string}opt_fromFile
+   * @param {string}opt_prefixTo
+   * @param {string}opt_pathFrom
+   * @param {string}opt_assFileName
+   * @param {string}opt_outputFile
    * @return {string} value of outputFile
    */
   polO.getOutputFile = function(
-      opt_Act, opt_FromFile, opt_PrefixTo, opt_PathFrom,
-      opt_AssFileName, opt_OutputFile){
-    var act = opt_Act,
-        fromFile = opt_FromFile,
-        prefixTo = opt_PrefixTo,
-        pathFrom = opt_PathFrom,
-        assFileName = opt_AssFileName,
-        outputFile = opt_OutputFile;
+      opt_act, opt_fromFile, opt_prefixTo, opt_pathFrom,
+      opt_assFileName, opt_outputFile){
+    var act = opt_act,
+        fromFile = opt_fromFile,
+        prefixTo = opt_prefixTo,
+        pathFrom = opt_pathFrom,
+        assFileName = opt_assFileName,
+        outputFile = opt_outputFile;
+
+    var argO = {};
+       argO.act = act;
+       argO.fromFile = fromFile;
+       argO.prefixTo = prefixTo;
+       argO.pathFrom = pathFrom;
+       argO.assFileName = opt_assFileName;
+       argO.outputFile = outputFile;
+       console.log('in getAssFileName: ');
+       Object.keys(argO).forEach((e)=>{console.log(e +' -> ' + argO[e]);});
+
+
     if( act === 'a' || act === 'ato'){
       if(!prefixTo){
-        // prefix's sit is filled by empty string (opt_PrefixTo = '')
+        // prefix's sit is filled by empty string (opt_prefixTo = '')
         // no 'hiding arguments' in calling method
         if(pathFrom){
           if( /\.json$/.test(pathFrom) ){
@@ -2156,7 +2267,7 @@ module.exports = (function(){
         }
       }else{
         // checks if pathFrom sits on prefixTo place?
-        if( polO.isArgPathFrom(fromFile,opt_PrefixTo)){
+        if( polO.isArgPathFrom(fromFile,opt_prefixTo)){
           console.log('in getOutputFile: pathFrom is lived on prefixTo place');
           if(pathFrom){
             if(/\.json$/.test(pathFrom)){
@@ -2180,7 +2291,7 @@ module.exports = (function(){
                      ' is not json file!!!';
             }
           }
-        }else if( !polO.isArgPathFrom(fromFile,opt_PathFrom)){
+        }else if( !polO.isArgPathFrom(fromFile,opt_pathFrom)){
           throw 'getOutputFile: incorrect value of pathFrom';
         }else{
           // pathFrom is good. Looks at assFileName and outputFile
@@ -2249,7 +2360,7 @@ module.exports = (function(){
         map( function(fl){return fl.name;} );
     try{
       fList = fs.readdirSync( arg).
-        map( function(el){ return el.replace(/\..+$/,'');});
+        map( function(el){ return el.replace(/\..+$/,'');}); // no f.extention
     }catch(e){
       console.log('entity considering as directory is not that one!');
       return false;
@@ -2454,7 +2565,7 @@ module.exports = (function(){
       console.log(label);
       polO.runLauncher( label,tau,'0'); //polO.run('0');
     }
-    if(1){
+    if(0){
       //  test (4-e) fF - set pxT - set
       label = 'TEST fromFile set and prefixTo set case (4- f->e)';
       console.log(label);
@@ -2490,7 +2601,7 @@ module.exports = (function(){
                          '/params/' + fs.readdirSync(
                                           path.join(process.cwd(),'./params')).
                                       filter((fl)=>{return /43/.test(fl);})[0]);
-    if(0){
+    if(1){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '1_a_fromFile_set_pathFrom_on_prefixTo_sit';
       //fromFile
@@ -2624,4 +2735,3 @@ module.exports = (function(){
 
     return polO;
 }());
-
