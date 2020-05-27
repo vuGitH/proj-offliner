@@ -79,12 +79,14 @@ module.exports = (function(){
     getOutputFile: [1,0],
     getPathFrom: [1,1,1],
     evokeAspFiles: [1],
-    workTest: [1,1,0,0,0,0,0,0,0,0,0,0,0],
+    workTest: [1,0,0,0,0,0,0,0,0,0,0,0,0],
     runLauncher: [1],
-    run: [1,1,1,1,1],
-    runArg_0_1_obj_or_file: [1,1],
+    run: [1,1],
+    runGetOptionsObj: [1,1,1,1],
+    runArg_0_1_obj_or_file: [1,1,1],
     runArg_1_2_obj_or_file: [1,1],
     runArg_2_fromFile_gear: [1],
+    runArgsToOptions:[1,1],
     work: [1,1,1,1],
     evokeScriptsFromObj: [1,1,1],
     writeParamsFile: [1,1,1],
@@ -1588,22 +1590,21 @@ module.exports = (function(){
                       opt_pathFrom,
                       opt_assFileName,
                       opt_outputFile){
-    var lp = polO.log.point.run;
+    var lp = polO.log.point.run,
+    options;
     if(lp[0]){ console.log('run-method begins -----------------> \n');}
-    var options;
-    options = polO.getRunOptionsObj(opt_label,
-                                  opt_act,
-                                  opt_fromFile);
-
-    // creates options from string arguments only 
-    options = polO.createOptionsFromArgsOnly(opt_label,
-                                             opt_act,
-                                             opt_fromFile,
-                                             opt_prefixTo,
-                                             opt_pathFrom,
-                                             opt_assFileName,
-                                             opt_outputFile);
-
+    
+    options = polO.runGetOptionsObj(opt_label, opt_act, opt_fromFile);
+    if(!options){
+      // creates options from string arguments only 
+      options = polO.runArgsToOptions(opt_label,
+                                        opt_act,
+                                        opt_fromFile,
+                                        opt_prefixTo,
+                                        opt_pathFrom,
+                                        opt_assFileName,
+                                        opt_outputFile);
+    }
     polO.setCalcParams(polO, options);
     polO.ppp(options);
 
@@ -1617,7 +1618,8 @@ module.exports = (function(){
                    polO[i] + '\n';
           }
           return str;
-        }()));
+        }())
+      );
     }
     polO.workWith(options);
   };
@@ -1645,10 +1647,11 @@ module.exports = (function(){
    * @param {string|Object}opt_fromFile (or paramsObj or parmsFileNamePart)
    * @return {Object} parameters object
    */  
-  polO.getRunOptionsObj = function(opt_label, opt_act, opt_fromFile){
+  polO.runGetOptionsObj = function(opt_label, opt_act, opt_fromFile){
 
-    var options; // params object
-    if(lp[0]){ console.log('typeof opt_label =%s',typeof opt_label );}
+    var options, // params object
+        lp = polO.log.point.runGetOptionsObj;
+    if(lp[0]){ console.log('typeof opt_label = %s',typeof opt_label );}
     var label = opt_label || polO.label;
     if(lp[1]){ console.log('label has been assigned to %s',label);}
 
@@ -1671,51 +1674,96 @@ module.exports = (function(){
     }
     return options;
   };
-    /**
+  /**
    * creates options from arguments only
-   * @param {} all standard
+   * It means that magic disappeared and arguments have their litteral
+   * meaning or default values if are absent
+   * without possible shifting
+   * @param {string}label - the label of project being handled
+   * @param {string|Object=}opt_act Action parameter.Optional.
+   *     Default value is a) 'ea' if frmoFile is not set and will have
+   *     default value, or b) 'e' if fileFrom is determined value of
+   *     full path of initial project json file
+   *    it's a {string} or it is absent at all.
+   *     In other cases or {string} action parameter - possible values 'e', 'a',
+   *     'ea', 'eto', 'o', 'f'
+   *     or is an object specifying all parameters as {string} properties
+   *      options = {
+   *        act: '...',
+   *        fromFile: '...',
+   *        prefixTo: '...',
+   *        pathTo: '...',
+   *        pathFrom: '...',
+   *        assFileName: '...',
+   *        outputFile: '...'
+   *      };
+   *     or is a string being param json file name without trailing '_params.json'
+   * @param {string|Object}opt_fromFile (or paramsObj or parmsFileNamePart)
+   * @param {string}opt_prefixTo ( could have meaning of pathTo (eto) or pathFrom (a) )
+   * @param {string}opt_pathFrom
+   * @param {string}opt_assFileName
+   * @param {string}opt_outputFile
+   * @return {Object} input parameters' object
    */
-  polO.createOptionsFromArgsOnly = function(opt_label,
+  polO.runArgsToOptions = function(opt_label,
                                             opt_act,
                                             opt_fromFile,
                                             opt_prefixTo,
                                             opt_pathFrom,
                                             opt_assFileName,
                                             opt_outputFile){
-   var act, fromFile; 
-    act = opt_act;
-    fromFile = polO.absPath(opt_fromFile);
+   var act, fromFile, fF,
+       ofF = opt_fromFile,
+       options,
+       lp = polO.log.point.runArgsToOptions; 
 
-    if(polO.isFileGoodJson(fromFile, opt_fromFile)) {
-      polO.fromFile = fromFile;
+    act = opt_act || polO.act;
+    fF = ofF || polO.fromFile; 
+    
+    fF = (!fF) ? polO.getDefaultFromFile(act) :
+                       polO.absPath(fF);
+    
+    var fFN = path.basename(fF);
+    
+    if(polO.isFileGoodJson(fF, fFN)) {
+      polO.fromFile = fF;
+    }else{
+      throw "fromFile should be good Apps Script Project json file downloaded";
     }
+    
     if(act && ['e','ea','eto','erf','a','ato'].indexOf(act) < 0){
       if(lp[0]){
-        console.log( 'incorrect value of opt_act parameter!');
-      }
-      act = 'e';
+        console.log( 'incorrect value of opt_act parameter = %s!', opt_act);
+      }      
     }
+
+    act = !act || act === 'ea' || act === 'allDefaults' || act === 'all' ?
+          'ea' :
+          ((act && ['e','eto','erf','a','ato'].indexOf(act) < 0) ? 'e' : act);
+    
+    
     options = {
-      label: opt_label,
+      label: opt_label || polO.label,
       act: act,
-      fromFile: fromFile,
+      fromFile: fF,
       prefixTo: (act === 'a' || act=== 'ato') ?
           '' : (act === 'eto' ? '' : polO.absPath(opt_prefixTo)),
       pathTo: (act === 'eto') ?
           polO.absPath(opt_prefixTo) : polO.absPath(polO.pathTo),
-      pathFrom: polO.getPathFrom( act, fromFile, opt_prefixTo, opt_pathFrom),
-      assFileName: polO.getAssFileName(act, fromFile, opt_prefixTo,
+      pathFrom: polO.getPathFrom( act, fF, opt_prefixTo, opt_pathFrom),
+      assFileName: polO.getAssFileName(act, fF, opt_prefixTo,
                       opt_pathFrom ,opt_assFileName, opt_outputFile),
-      outputFile: polO.getOutputFile(act, fromFile, opt_prefixTo,
+      outputFile: polO.getOutputFile(act, fF, opt_prefixTo,
                       opt_pathFrom, opt_assFileName, opt_outputFile)
     };
-    if(lp[0]){
+    if(lp[1]){
       console.log('new options object created from arguments');
     }
+    return options;
   };
   /**
-   * tests if a file is good json file
-   * source json file
+   * tests if a file is good json ASProject file -
+   * origine of asp-files sources
    *
    * Requirements to json file
    * checks
@@ -1762,6 +1810,7 @@ module.exports = (function(){
   * pre-sets options object depending on values of
    * polO.run method's arguments:
    * @param {Object|string|undefined} label first argument of method polO.run
+   * @param {Object|string|undefined}
    * @return {Object|void} options object
    */
   polO.runArg_0_1_obj_or_file = function(label,opt_act){
@@ -1823,36 +1872,39 @@ module.exports = (function(){
   polO.runArg_1_2_obj_or_file = function(label, opt_act, opt_fromFile){
     var options,
         lp = polO.log.point.runArg_1_2_obj_or_file;  // log point array
-
+    if(lp[0]){
+      console.log('in runArg_1_2_obj_or_file: label=%s \n opt_act=%s',
+                label, opt_act );
+    }
     //  --=== opt_ACT-Ggear options --====
 
     if( typeof opt_act === 'object' ){
        options = opt_act;   // paramsObject case (1)
 
-      }else if( polO.hasParamsJson(opt_act)){
+    }else if( polO.hasParamsJson(opt_act)){
 
-        if(lp[0]){
-          console.log('Data from params json file %s identified',
-                    '\\params\\' + opt_act + '\\_params.json');
+      if(lp[1]){
+        console.log('Data from params json file %s identified',
+                  '\\params\\' + opt_act + '\\_params.json');
+      }
+      options = require( './params/' + opt_act + '_params.json');
+
+      // cleans cache
+      delete require.
+          cache[require.resolve('./params/' + opt_act + '_params.json')];
+
+      if((label || options.label) && lp[2]){
+        console.log('oprions.label from file = '+ options.label);
+      }else{
+        if(!label || !options.label){
+          console.log('label parameter is recomended to be set');
         }
-        options = require( './params/' + opt_act + '_params.json');
+      }
 
-        // cleans cache
-        delete require.
-            cache[require.resolve('./params/' + opt_act + '_params.json')];
-
-        if((label || options.label) && lp[1]){
-          console.log('oprions.label from file = '+ options.label);
-        }else{
-          if(!label || !options.label){
-            console.log('label parameter is recomended to be set');
-          }
-        }
-
-        if(opt_fromFile && /\.json$/.test(opt_fromFile)){
-          // ===- opt_fromFile supliment to ACT-Gear-options -====
-          options.fromFile =  polO.absPath(opt_fromFile);
-        }
+      if(opt_fromFile && /\.json$/.test(opt_fromFile)){
+        // ===- opt_fromFile supliment to ACT-Gear-options -====
+        options.fromFile =  polO.absPath(opt_fromFile);
+      }
     }else if(!opt_act){
       //  ---==== fromFILE-Gear options ====---
 
@@ -2003,8 +2055,9 @@ module.exports = (function(){
     }else if(!opt_fromFile ){      
       if(lp[0]){
         console.log('fromFile is not set or has bad name --> "' +
-            opt_fromFile + '"');
+            opt_fromFile + '" works allDefault');
       }
+      polO.run(label + ' ->allDefaults','allDefaults');
       return;  // run without parameters
     }
     return options;
@@ -2267,9 +2320,10 @@ module.exports = (function(){
     polO.work(label,polO.act);
   };
   /**
- * returns default fromFile full path value dependent on act-parameter value
+ * returns default fromFile absolute full path value
+ * dependent on act-parameter value
  * @param {string} act action parameter
- * @return {string} full path of default from file.
+ * @return {string} absolute full path of default from file.
  */
 polO.getDefaultFromFile =  function(act){
   var f = {
@@ -2278,9 +2332,10 @@ polO.getDefaultFromFile =  function(act){
     a: ".\\test\\testProjFile.json",
     ea: ".\\test\\testProjFile.json"
   };
-  return !act ? f.all :
-                (act === 'e' ? f.e :
-                (act === 'a' ? f.a : f.ea));
+  var pth = !act ? f.all :
+                  (act === 'e' ? f.e :
+                  (act === 'a' ? f.a : f.ea));
+  return polO.absPath(pth);
 };
   /**
    * returns outputFile value depends on the values of other parameters
@@ -2667,8 +2722,7 @@ polO.getDefaultFromFile =  function(act){
         tau = 5000, act,
         fFString,
         fF, assFN, outF,
-        lp = polO.log.point.workTest;
-        lp[4] = lp[5] = lp [6] =1;
+        lp = polO.log.point.workTest;        
 
     if(lp[0]){
       //  test (0)
