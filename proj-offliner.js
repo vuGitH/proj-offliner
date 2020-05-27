@@ -49,30 +49,57 @@ module.exports = (function(){
   polO.log.point = {
     off: function(group){
       var pp = polO.log.point;
+      var ks = Object.keys(pp), ki;
       if(!group || group === 'all'){
-        var ks = Object.keys(pp), ki;
         for(var k = 0; k < ks.length; k++){
           ki = ks[k];
           if(typeof pp[ki] === 'function'){
             continue;
           }
-          pp[ki] = pp[ki].map(e => 0);
+          if( !Array.isArray(pp[ki])){
+            continue;
+          }
+            pp[ki] = pp[ki].map(e => 0);
         }
       }
     },
     on: function(group){
       var pp = polO.log.point;
-      console.log(pp);
+      //console.log(pp);
+      var ks = Object.keys(pp), ki;
       if(!group || group === 'all'){
-        var ks = Object.keys(pp), ki;
         for(var k = 0; k < ks.length; k++){
           ki = ks[k];
           if(typeof pp[ki] === 'function'){
             continue;
           }
-          pp[ki] = pp[ki].map(e => 1);
-          console.log(ki + '\n'+ typeof pp[ki] + '\n' + pp[ki]);
+          if( Array.isArray(pp[ki])){
+            pp[ki] = pp[ki].map(e => 1);
+          //console.log(ki + '\n'+ typeof pp[ki] + '\n' + pp[ki]);
+          }
         }
+      }
+    },
+    /**
+     * switch off all log prints excluding few ones for method
+     * 'group' specified. parameter member set indicis of group's
+     * prins members to switch on.
+     * @param {string} group method name whos lop prints to switch on
+     * @param {number|Array.<number>} member number of print or array
+     *   of numbers of log prints to switch on
+     */
+    offExept(group,member){
+      var pp = polO.log.point;
+      pp.off('all');
+      if(Array.isArray(member)){
+        member.forEach((im)=>{pp[group][im] = 1;});
+      }else{
+        if( typeof( member) !== 'number'){
+          console.log('print member should be a number but is %s' +
+          '0 is used' ,member);
+          member = 0;
+        }
+        pp[group][member] = 1;
       }
     },
     ppp: [1],
@@ -81,7 +108,7 @@ module.exports = (function(){
     evokeAspFiles: [1],
     workTest: [1,0,0,0,0,0,0,0,0,0,0,0,0],
     runLauncher: [1],
-    run: [1,1],
+    run: [1,1,1],
     runGetOptionsObj: [1,1,1,1],
     runArg_0_1_obj_or_file: [1,1,1],
     runArg_1_2_obj_or_file: [1,1],
@@ -91,6 +118,7 @@ module.exports = (function(){
     evokeScriptsFromObj: [1,1,1],
     writeParamsFile: [1,1,1],
     eEndpoint: [1,1],
+    aEndpoint: [1],
     assembleProjFile: [1,1],
     preUploadFile: [1,1,1],
     preUploadFileAsync: [1,1,1],
@@ -136,6 +164,49 @@ module.exports = (function(){
         console.log(
           'in work: after evokeAspFiles with \'%s\' action parameter\n' +
           'polO.pathTo=\n%s and mode=%s', act, polO.pathTo, mode);
+    }
+  ];
+  polO.log.point.run.print = [
+    "",
+    "",
+    function(options){       // .print[2]()
+      console.log('before work call \n' +
+        'options object properties and equivalents polO.params:\n%s \n',
+        (function(){
+          var str='';
+          for( var i in options){
+            str += 'opts.' + i + '=' + options[i] + '\npolO.' + i + '=' +
+                  polO[i] + '\n';
+          }
+          return str;
+        }()));
+    }
+  ];
+  polO.log.point.assembleProjFile.print = [
+    function(
+      opt_fromFile, opt_pathFrom, opt_assFileName,  opt_outputFile, label){
+      // print[0]
+        console.log(
+        '\n\nInside assembleProjFile\n'+
+        '\n------vvvvvv------\n' +
+        'opt_fromFile =\n%s\n' +
+        'opt_pathFrom =\n%s\n' +
+        'opt_assFileName =\n%s\n' +
+        'opt_outputFile =\n%s\n' +
+        'label = %s' +
+        '\n------^^^^^^------\n',
+        opt_fromFile,
+        opt_pathFrom,
+        opt_assFileName,
+        opt_outputFile,
+        label);
+    },
+    function(pathFrom, fromFileCopy){  // print[1]
+      console.log('in assembleProjFile: Before assembleFileReady event emit \n' +
+        'pathFrom=\n%s\n' +
+        'fromFileCopy=\n%s',
+        pathFrom,
+        fromFileCopy);
     }
   ];
   polO.myEE = polO.getEventsEmInstance();
@@ -504,7 +575,7 @@ module.exports = (function(){
     var fnm = path.basename(fromFile,'.json'); // file name without extension
     var fpth = __dirname + sep + 'params' + sep + fnm + '_params.json';
     fpth = polO.checkParamsFileName(
-        fpth.replace(/_params\.json/,'_0_params.json'));
+        fpth.replace(/_params\.json/,'_0_params.json') );
     polO.paramsFile = fpth;
 
     var data = JSON.stringify(o);
@@ -644,25 +715,16 @@ module.exports = (function(){
   polO.assembleProjFile = function(
       label, opt_fromFile, opt_pathFrom, opt_assFileName, opt_outputFile){
     var lp = polO.log.point.assembleProjFile;
+
     if(lp[0]){
-      console.log(
-        '\n\nInside assembleProjFile\n'+
-        '\n------vvvvvv------\n' +
-        'opt_fromFile =\n%s\n' +
-        'opt_pathFrom =\n%s\n' +
-        'opt_assFileName =\n%s\n' +
-        'opt_outputFile =\n%s\n' +
-        'label = %s' +
-        '\n------^^^^^^------\n',
-        opt_fromFile,
-        opt_pathFrom,
-        opt_assFileName,
-        opt_outputFile,
-        label);
+      lp.print[0](
+        opt_fromFile, opt_pathFrom, opt_assFileName,  opt_outputFile, label);
     }
+
     /** @proprety {string} outputFile user predefined full path of output file*/
     var outputFile;
     var ouF, fromFile, fF, pathFrom, pF, fromFileCopy;
+
     outputFile = ouF = opt_outputFile || polO.outputFile;
     fromFile = fF = opt_fromFile || polO.fromFile;
     pathFrom = pF = (opt_pathFrom ? opt_pathFrom :
@@ -675,7 +737,6 @@ module.exports = (function(){
     }
     polO.assemble = true;
 
-
     fromFileCopy = polO.assfile(opt_fromFile, opt_pathFrom, opt_assFileName,
                                 opt_outputFile);
     if(!fromFileCopy){
@@ -686,11 +747,7 @@ module.exports = (function(){
         throw(err);
       }
       if(lp[1]){
-        console.log('\n\nBefore assembleFileReady event emit \n' +
-          'pathFrom=\n%s\n' +
-          'fromFileCopy=\n%s',
-          pathFrom,
-          fromFileCopy);
+        lp.print[1](pathFrom, fromFileCopy);
       }
       // emits assembleFileReady event
       polO.myEE.emit('assembleFileReady',label, fromFileCopy,
@@ -841,7 +898,7 @@ module.exports = (function(){
         fExt; // file extention
     var outputFile =
         opt_outputFile ||
-        polO.checkAssFileName( fromFile.replace(/\.json/,'_0.json'));
+        polO.checkAssFileName( fromFile); //.replace(/\.json/,'.json'));
 
     var files = dObj.files;
     if( !Array.isArray(files) || files.length <= 0){
@@ -1312,7 +1369,7 @@ module.exports = (function(){
 
     if(lp[0]){
       a = Object.values(arguments);
-      polO.anvl('work',a);    // log printing
+      polO.anvl('work',...a);    // log printing
     }
 
     polO.act =
@@ -1442,12 +1499,12 @@ module.exports = (function(){
    */
   polO.ppp = function(options){
     var prnms = polO.paramsNames;
+    var o = options;
     var lp = polO.log.point.ppp;
     if(lp[0]){
       prnms.forEach((el)=>{
-          console.log('opts.' + el + '=' +
-                    ((options[el]) ? options[el] : 'empty') + '\n'+
-                    'polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
+          console.log('opts.' + el + '=' + (o[el] ? o[el] : 'empty') + '\n'+
+                    '  polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
     }
   };
   /**
@@ -1593,10 +1650,10 @@ module.exports = (function(){
     var lp = polO.log.point.run,
     options;
     if(lp[0]){ console.log('run-method begins -----------------> \n');}
-    
+
     options = polO.runGetOptionsObj(opt_label, opt_act, opt_fromFile);
     if(!options){
-      // creates options from string arguments only 
+      // creates options from string arguments only
       options = polO.runArgsToOptions(opt_label,
                                         opt_act,
                                         opt_fromFile,
@@ -1606,21 +1663,14 @@ module.exports = (function(){
                                         opt_outputFile);
     }
     polO.setCalcParams(polO, options);
-    polO.ppp(options);
 
     if(lp[1]){
-      console.log('before work call \n' +
-        'options object properties and equivalents polO.params:\n%s \n',
-        (function(){
-          var str='';
-          for( var i in options){
-            str += 'opts.' + i + '=' + options[i] + '\npolO.' + i + '=' +
-                   polO[i] + '\n';
-          }
-          return str;
-        }())
-      );
+      polO.ppp(options);
     }
+    if(lp[2]){
+      polO.log.point.run.print[2](options);
+    }
+
     polO.workWith(options);
   };
   /**
@@ -1646,7 +1696,7 @@ module.exports = (function(){
    *     or is a string being param json file name without trailing '_params.json'
    * @param {string|Object}opt_fromFile (or paramsObj or parmsFileNamePart)
    * @return {Object} parameters object
-   */  
+   */
   polO.runGetOptionsObj = function(opt_label, opt_act, opt_fromFile){
 
     var options, // params object
@@ -1715,33 +1765,33 @@ module.exports = (function(){
    var act, fromFile, fF,
        ofF = opt_fromFile,
        options,
-       lp = polO.log.point.runArgsToOptions; 
+       lp = polO.log.point.runArgsToOptions;
 
     act = opt_act || polO.act;
-    fF = ofF || polO.fromFile; 
-    
+    fF = ofF || polO.fromFile;
+
     fF = (!fF) ? polO.getDefaultFromFile(act) :
                        polO.absPath(fF);
-    
+
     var fFN = path.basename(fF);
-    
+
     if(polO.isFileGoodJson(fF, fFN)) {
       polO.fromFile = fF;
     }else{
       throw "fromFile should be good Apps Script Project json file downloaded";
     }
-    
+
     if(act && ['e','ea','eto','erf','a','ato'].indexOf(act) < 0){
       if(lp[0]){
         console.log( 'incorrect value of opt_act parameter = %s!', opt_act);
-      }      
+      }
     }
 
     act = !act || act === 'ea' || act === 'allDefaults' || act === 'all' ?
           'ea' :
           ((act && ['e','eto','erf','a','ato'].indexOf(act) < 0) ? 'e' : act);
-    
-    
+
+
     options = {
       label: opt_label || polO.label,
       act: act,
@@ -2026,7 +2076,7 @@ module.exports = (function(){
       if(/\.json$/.test(opt_fromFile)){
         // presumingy AppsScript project's json file
         // Checks existance of _PARAMS.json co-partner file in params-directory
-        
+
         parsf = __dirname + sp + path.basename(opt_fromFile,'.json') +
                 '_params.json';
 
@@ -2037,7 +2087,7 @@ module.exports = (function(){
                         (polO.act ? polO.act :
                                    (options.fromFile ?
                                     'e' :    // default for fromFile existed
-                                    'ea'));  // all default                       
+                                    'ea'));  // all default
           options.fromFile = options.fromFile ? options.fromFile :
                              polO.getDefaultFromFile(options.act); //defaults
         }else{
@@ -2052,12 +2102,12 @@ module.exports = (function(){
           };
         }
       }
-    }else if(!opt_fromFile ){      
+    }else if(!opt_fromFile ){
       if(lp[0]){
         console.log('fromFile is not set or has bad name --> "' +
             opt_fromFile + '" works allDefault');
       }
-      polO.run(label + ' ->allDefaults','allDefaults');
+
       return;  // run without parameters
     }
     return options;
@@ -2503,8 +2553,8 @@ polO.getDefaultFromFile =  function(act){
         }
       }
      }else{
-      console.log( 'outputFile parameter is asked fro not \'a\'' +
-                   'or not \'ato\' cases?!');
+      console.log( 'outputFile parameter is asked from not \'a\'' +
+                   'or not \'ato\' cases; act = %s ?!',act);
       return ouF ? ouF : polO.outputFile;
     }
   };
@@ -2562,6 +2612,9 @@ polO.getDefaultFromFile =  function(act){
         (el,i)=>{console.log((i===0) ? `in ${el}:` : `${ns[i-1]} -> ${el}`);}
     );
   };
+  /**
+   * the same as .anv -method but opt_label arguments is included
+   */
   polO.anvl = function(callee, opt_label, opt_act, opt_fromFile, opt_prefixTo,
                       opt_pathFrom, opt_assFileName, opt_outputFile){
     var ptt = /,?\s*opt_/;
@@ -2722,7 +2775,7 @@ polO.getDefaultFromFile =  function(act){
         tau = 5000, act,
         fFString,
         fF, assFN, outF,
-        lp = polO.log.point.workTest;        
+        lp = polO.log.point.workTest;
 
     if(lp[0]){
       //  test (0)
