@@ -61,6 +61,12 @@ module.exports = (function(){
           }
             pp[ki] = pp[ki].map(e => 0);
         }
+      }else{
+        if(Array.isArray(pp[group])){
+          pp[group] = pp[group].map( e => 0);
+        }else{
+          throw "incorrect callee method name!";
+        }
       }
     },
     on: function(group){
@@ -77,6 +83,12 @@ module.exports = (function(){
             pp[ki] = pp[ki].map(e => 1);
           //console.log(ki + '\n'+ typeof pp[ki] + '\n' + pp[ki]);
           }
+        }
+      }else{
+        if(Array.isArray(pp[group])){
+          pp[group] = pp[group].map( e => 1);
+        }else{
+          throw "incorrect callee method name!";
         }
       }
     },
@@ -141,7 +153,7 @@ module.exports = (function(){
                   '\n  >----------<\n');
     }
   ];
-  polO.log.point.work.print=[
+  polO.log.point.work.print = [
     "",
     function(act,prefixTo,pathTo,fromFile){
       console.log('\n\nInside work:\n  >-------vvvvv-------<\n'+
@@ -182,6 +194,25 @@ module.exports = (function(){
         }()));
     }
   ];
+  polO.log.point.evokeScriptsFromObj.print = [
+    function (pathTo,dObj){  // [0]
+      console.log(
+        '\n\nInside polO.evokeScriptsFromObj: Temporary folder is ready:' +
+        '\n%s\n'+
+        'Data object received. String length= %s',
+        pathTo,
+        JSON.stringify(dObj).length );
+    },
+    function(iti){           // [1]
+              console.log('\n\nin placeScriptsTo: timeInterval cleared at' +
+                         ' attempt number(iti) =%s',iti);
+    },
+    function(pathTo){        // [2]
+      // last file handled
+      console.log('AppsScript\'s-proj Files are evoked into folder:\n' +
+        pathTo +'\n');
+    }
+  ];
   polO.log.point.assembleProjFile.print = [
     function(
       opt_fromFile, opt_pathFrom, opt_assFileName,  opt_outputFile, label){
@@ -215,7 +246,6 @@ module.exports = (function(){
    * to delay next test run inside polO.workTest() method */
   polO.timeLag = 0;
 
-  //  polO modification
   // path parts separator
   polO.sep = (function(){
     return path.sep === '\\' ? '\\' : '/';
@@ -459,12 +489,7 @@ module.exports = (function(){
       return;
     }
     if(lp[0]){
-      console.log(
-        '\n\nInside polO.evokeScriptsFromObj: Temporary folder is ready:' +
-        '\n%s\n'+
-        'Data object received. String length= %s',
-        pathTo,
-        JSON.stringify(dObj).length );
+      lp.print[0](pathTo,dObj);
     }
 
     var sep = polO.sep;
@@ -497,18 +522,15 @@ module.exports = (function(){
       }
       var iti=0;
       var ti = setInterval(function(){
+          var lp = polO.log.point.evokeScriptsFromObj;
           if( fs.readdirSync(pathTo).length === files.length ){
             clearInterval(ti);
             if(lp[1]){
-              console.log('\n\nin placeScriptsTo: timeInterval cleared at' +
-                         ' attempt number(iti) =%s',iti);
+              lp.print[1](iti);
             }
             if(lp[2]){
-              // last file handled
-              console.log(
-                'AppsScript\'s-proj Files are evoked into folder:\n' +
-                pathTo +'\n');
-            }
+              lp.print[2](pathTo);
+            }  // last file handled
 
             // opens Windows files Explorer for folder with asp-filess written.
             var childProc = cp.execSync(
@@ -573,9 +595,8 @@ module.exports = (function(){
     var sep = polO.sep,
         lp = polO.log.point.writeParamsFile;
     var fnm = path.basename(fromFile,'.json'); // file name without extension
-    var fpth = __dirname + sep + 'params' + sep + fnm + '_params.json';
-    fpth = polO.checkParamsFileName(
-        fpth.replace(/_params\.json/,'_0_params.json') );
+    var fpth = __dirname + sep + 'params' + sep + fnm + '_0_params.json';
+    fpth = polO.checkParamsFileName(fpth);
     polO.paramsFile = fpth;
 
     var data = JSON.stringify(o);
@@ -630,27 +651,13 @@ module.exports = (function(){
     return nm.replace(/\_\d+$/,'') + "_" + iplus + strPartFollows;
   };
   /**
-   * Checks availability of final params file name.
-   * If the one being presummed is already available
-   * the digit preceded '_params.json' part will be increased by one
-   * @param {string} pathTesting - full path of params-file testing including
-   *     file name and extension
-   * @return {string} name chosen
+   * 'endpoint-e' event listener (evoke)
+   * @param{string} label identifier of project being handled
+   * @param {string} pathTo path to the directory where asp-filess have been
+   *     located.
+   * @param {string} fromFile - original json-file
+   * @param {string} act - actual value of act parameter
    */
-  polO.checkParamsFileName = function(pathTesting){
-    while( fs.existsSync(pathTesting)){
-      pathTesting  = polO.increaseDigitInPath(pathTesting,"_params.json");
-    }
-    return pathTesting;
-  };
-   /**
-    * 'endpoint-e' event listener (evoke)
-    * @param{string} label identifier of project being handled
-    * @param {string} pathTo path to the directory where asp-filess have been
-    *     located.
-    * @param {string} fromFile - original json-file
-    * @param {string} act - actual value of act parameter
-    */
   polO.eEndpoint = function (label,fromFile,pathTo, act){
     var pathFrom,
         lp = polO.log.point.eEndpoint;
@@ -660,7 +667,6 @@ module.exports = (function(){
                 'label = '+ label +
                 '\npathTo =\n' + pathTo );
     }
-
     if( act === 'ea'){
       pathFrom =  pathTo;
       polO.pathFrom = pathFrom;
@@ -846,7 +852,7 @@ module.exports = (function(){
     if( mode === 'rf') {
       fs.readFile(fromFile,function(err,data){
         if(err){
-          console.log('Error %s\nhas occurred in evokeObjFromFile\n' +
+          console.log('Error %s\nhas occurred in evokeObjFromAssFile\n' +
           ' while reading file\n%s\n' +
           'mode=%s:', err, fromFile, mode);
         }else{
@@ -1144,7 +1150,7 @@ module.exports = (function(){
     }
   };
   /**
-   * Checks availability of final assemble file name.
+   * Checks availability of assemble file name specified on drive
    * If presumed one is already available
    * last digit of the name string is increased by one.
    * It's cosidered the digit betwin extention and last underscore sign.
@@ -1154,15 +1160,48 @@ module.exports = (function(){
    * @return {string} name chosen
    */
   polO.checkAssFileName = function(pathTesting){
+    return polO.checkFileName(pathTesting,'.json');
+  };
+    /**
+   * Checks availability of assemble file name specified on drive
+   * If presumed one is already available
+   * last digit of the name string is increased by one.
+   * It's cosidered the digit betwin extention and last underscore sign.
+   * Nothing is changed if file name has no digital part before .json
+   * extension
+   * @param {string} pathTesting
+   * @param {string} trail ending part of file name used to specify file type
+   * @return {string} name chosen
+   */
+  polO.checkFileName = function(pathTesting, trail){
     var tempNm = pathTesting;
     while( fs.existsSync(pathTesting)){
-      pathTesting = polO.increaseDigitInPath(pathTesting,".json");
+      pathTesting = polO.increaseDigitInPath(pathTesting,trail);
       if(tempNm === pathTesting){
         break;
       }
     }
     return pathTesting;
   };
+    /**
+   * Checks availability of final params file name.
+   * If the one being presummed is already available
+   * the digit preceded '_params.json' part will be increased by one
+   * @param {string} pathTesting - full path of params-file testing including
+   *     file name and extension
+   * @return {string} name chosen
+   */
+  polO.checkParamsFileName = function(pathTesting){
+      return polO.checkFileName(pathTesting,'_params.json');
+  };
+   /**
+    * 'endpoint-e' event listener (evoke)
+    * @param{string} label identifier of project being handled
+    * @param {string} pathTo path to the directory where asp-filess have been
+    *     located.
+    * @param {string} fromFile - original json-file
+    * @param {string} act - actual value of act parameter
+    */
   /**
    * writes read me - text into console output
    */
@@ -1371,6 +1410,10 @@ module.exports = (function(){
       a = Object.values(arguments);
       polO.anvl('work',...a);    // log printing
     }
+    
+    label = label ? (polO.label ? label + "--" + polO.label : label) :
+                    polO.label;
+    polO.label = label;
 
     polO.act =
       act = opt_act ? opt_act :
@@ -1504,7 +1547,7 @@ module.exports = (function(){
     if(lp[0]){
       prnms.forEach((el)=>{
           console.log('opts.' + el + '=' + (o[el] ? o[el] : 'empty') + '\n'+
-                    '  polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
+                    'polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
     }
   };
   /**
@@ -1668,7 +1711,7 @@ module.exports = (function(){
       polO.ppp(options);
     }
     if(lp[2]){
-      polO.log.point.run.print[2](options);
+      lp.print[2](options);
     }
 
     polO.workWith(options);
@@ -1935,7 +1978,7 @@ module.exports = (function(){
 
       if(lp[1]){
         console.log('Data from params json file %s identified',
-                  '\\params\\' + opt_act + '\\_params.json');
+                  '\\params\\' + opt_act + '_params.json');
       }
       options = require( './params/' + opt_act + '_params.json');
 
@@ -2597,7 +2640,7 @@ polO.getDefaultFromFile =  function(act){
     }
   };
   /**
-   * prints callee methods name and standard arguments' names and values
+   * prints callee method name and standard arguments' names and values
    *  into console
    * @example of call inside some function:
    *    var a = Object.values(arguments);
@@ -2614,6 +2657,9 @@ polO.getDefaultFromFile =  function(act){
   };
   /**
    * the same as .anv -method but opt_label arguments is included
+   * @example of call inside some calle method or function:
+   *   var a = Object.values(arguments);
+   *   polO.anvl('<yourCalleeName>',...a);
    */
   polO.anvl = function(callee, opt_label, opt_act, opt_fromFile, opt_prefixTo,
                       opt_pathFrom, opt_assFileName, opt_outputFile){
@@ -2804,14 +2850,12 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,o); //polO.run(o);
     }
     if(lp[2]){
-      //  oooooooooooooooooooooooooo
       o = {
         act: 'e',
         fromFile:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes\\'+
             'smsCikPostCallHandle_Scripts.json',
        prefixTo:''
       };
-        //  oooooooooooooooooooooooooo
 
       //  test (1-e) fF - set pxT - default
       label = 'TEST (1-e) fF - set pxT - default';
@@ -2829,14 +2873,12 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,o); //polO.run(o);
     }
     if(lp[3]){
-      //  oooooooooooooooooooooooooo
       o = {
         act: 'e',
         fromFile:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes\\'+
             'smsCikPostCallHandle_Scripts.json',
         prefixTo:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codesRf_'
       };
-      //  oooooooooooooooooooooooooo
 
       //  test (1-e) fF - set pxT - set
       label = 'TEST (1-e) fF - set pxT - set';
@@ -2942,7 +2984,7 @@ polO.getDefaultFromFile =  function(act){
       console.log(label);
       polO.runLauncher( label,tau,act,fF,pthFrm,assFN);
     }
-    if(0){
+    if(1){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '2_TEST_fromFile_outF_set_pathFrom_on_prefixTo_sit';
       //fromFile
@@ -2956,7 +2998,7 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,act,fF,pthFrm,outF);
 
     }
-    if(0){
+    if(1){
       //  test a fF pthFr assFN  - set
       label = '3_a_TEST_fromFile_assFN_set_pathFrom_atSite';
       //fromFile
@@ -2968,7 +3010,7 @@ polO.getDefaultFromFile =  function(act){
       console.log(label);
       polO.runLauncher( label,tau,act,fF,'',pthFrm,assFN);
     }
-    if(0){
+    if(1){
       //  test a fF pthFr(pxTo) outF  - set
       label = '4_TEST_fromFile_outF_set_pathFrom_at_site';
       //fromFile
@@ -2982,7 +3024,7 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
 
     }
-    if(0){
+    if(1){
       //  test a fF pthFr(pxTo) outF  - set
       label = '5_ato_TEST_fromFile_outF_set_pathFrom_at_site';
       //fromFile
@@ -2997,7 +3039,7 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,act,fF,'',pthFrm,outF);
 
     }
-    if(0){
+    if(1){
       //  test a fF pthFr(pxTo) outF  - set
       label = '6_ato_TEST_fromFile_outF_set_pathFrom_at_pxTo sit';
       //fromFile

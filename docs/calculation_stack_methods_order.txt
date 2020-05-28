@@ -1,0 +1,30 @@
+/*
+ * stack chain:
+   runLanch
+   
+   runLanch
+   
+   workWith                      EVOKE                      ASSEBMLE
+ 
+   work >
+     |
+     V
+   evokeAspFiles >
+     |
+     V
+   evokeObjFromFile >        //  listen event 'toFolderReady';
+     |                            emit event 'objectReady'
+     V 
+  > evokeScriptsFromObj      //  listener event 'objectReady'} > 
+     |
+     V
+  > writeParamsFile >
+     |    ^
+     V    ^
+  > checkParamsFileName >
+     |    ^
+     V    |
+  > checkFileName >
+     |    ^
+     V    |
+  > increaseDigitInPath
