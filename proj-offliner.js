@@ -1538,7 +1538,7 @@ module.exports = (function(){
   };
   /**
    * Prints managing Parameters' Properties of an Object
-   * @param {object} options
+   * @param {Object} options
    */
   polO.ppp = function(options){
     var prnms = polO.paramsNames;
@@ -1548,6 +1548,31 @@ module.exports = (function(){
       prnms.forEach((el)=>{
           console.log('opts.' + el + '=' + (o[el] ? o[el] : 'empty') + '\n'+
                     'polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
+    }
+  };
+  /**
+   * Prints Object 'options' Properties -
+   * if !opt_list use polO.paramsNames keys
+   * if opt_list is empty array [] uses Object.keys(options)
+   * otherwise uses specified [...keys] values
+   * @param {string} title comment's title on preceeded line
+   * @param {Object} options
+   * @param {Array.<string>}opt_list list of properties names to print
+   */
+   */
+  polO.pop = function(opt_title,options,opt_list){
+    var list = opt_list && opt_list.length ===0 ? Object.keys(options) : opt_list;
+    var prnms = !opt_list ? polO.paramsNames : list;
+
+    var o = options;
+    var lp = polO.log.point.ppp_;
+    if(lp[0]){
+      console.log(opt_title ? opt_title: 'properties:');
+      if(options){
+        prnms.forEach((el)=>{
+            console.log('opts.' + el + '=' + (o[el] ? o[el] : 'empty') + '\n'+
+                      'polO.' + el + '=' + (polO[el] ? polO[el] :'empty'));});
+      }else{console.log('---------');}
     }
   };
   /**
