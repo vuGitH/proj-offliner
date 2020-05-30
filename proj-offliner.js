@@ -26,6 +26,7 @@ module.exports = (function(){
   polO.paramsNames = [
     'act','fromFile','prefixTo', 'pathTo','pathFrom','assFileName',
     'outputFile','label'];
+  /* ---------------- LOG  -------------------------------*/
   /**
    * log object to register procedure steps of files' handling
    * by statuses: 'beforeWrite','written', 'error',...
@@ -290,8 +291,8 @@ module.exports = (function(){
    * which could be used or as pathTo directory during asp-files extraction
    * from json file or for new file path at assembling new json file
    * @param {string} fp - full path to json file including the file name
-   * @return {string|Boolean} path to subdirectory named as fileName without
-   * extension
+   * @return {string} path to subdirectory named as fileName without
+   *   extension or empty string ''
    */
   polO.fileNameToPath = function (fp){
     var o, prfx;
@@ -326,7 +327,7 @@ module.exports = (function(){
       });
     }
   };
-  // ----- EVOKE ASP-FILES ---------
+  // ------------------- EVOKE ASP-FILES --------------------
   /**
    * 'toFolderReady' event emitter
    * Sets temporary folder where to write evoking asp-files.
@@ -539,7 +540,8 @@ module.exports = (function(){
                 pathTo+
                 '" & exit');
 
-            // writes parameters file into ./params folder (synchronously)
+            /* writes parameters file into ./params folder (synchronously)
+             * (or asynchronously) */
             polO.writeParamsFile(label, fromFile, pathTo, act);
             //return;
           }else{
@@ -683,7 +685,7 @@ module.exports = (function(){
         act);
     }
   };
-  //  -----  ASSEMBLE ---------
+  //  ----------------------  ASSEMBLE -----------------
 
   /**
    * 'assembleFileRedy' event emitter
@@ -904,7 +906,7 @@ module.exports = (function(){
         fExt; // file extention
     var outputFile =
         opt_outputFile ||
-        polO.checkAssFileName( fromFile); //.replace(/\.json/,'.json'));
+        polO.checkAssFileName( fromFile);
 
     var files = dObj.files;
     if( !Array.isArray(files) || files.length <= 0){
@@ -1245,7 +1247,7 @@ module.exports = (function(){
     }
   };
   /**
-   * returns prefixTo value as absolute path using fileFrom and optPrefixTo
+   * returns prefixTo value as absolute path using fromFile and optPrefixTo
    *  parameters
    * @description prefixTo setting
    * - if opt_prefixTo is not set checks polO.prefixTo
@@ -1302,17 +1304,16 @@ module.exports = (function(){
    * opt_prefixTo argument contains the value of pathTo parameter
    * @param {string} act action parameter
    * @param {string} opt_prefixTo - opt_prefixTo value in calling function
-   * @param {Object} exp - object of external scope (exporter)
    * @return {string}  pathTo value
    */
-  polO.getPathTo = function(act, opt_prefixTo, exp){
+  polO.getPathTo = function(act, opt_prefixTo){
     if(act === 'eto' && opt_prefixTo ){
-      exp.no6 = true;
-      exp.prefixTo = '';
-      return exp.absPath(opt_prefixTo);
+      polO.no6 = true;
+      polO.prefixTo = '';
+      return polO.absPath(opt_prefixTo);
     }else{
-      return exp.pathTo ?
-             exp.absPath(exp.pathTo) :
+      return polO.pathTo ?
+             polO.absPath(polO.pathTo) :
              '';
     }
   };
@@ -1329,12 +1330,12 @@ module.exports = (function(){
    *         |                  or                          :
    * 2.3     |                  write file PARAMS.json      :
    * 3.      v                                  |           :
-   *  run(arguments* ........................   |           :
-   *         |              :               :   |           :
-   *         |              :               :   V           :
-   * 4.      |           options-<-------from PARAMS-file   :
-   *         v              |                               :
-   *       PARSE----------> +                               :
+   *  run(arguments*)                           |           :
+   *         |        .......................   |           :
+   *         |        :                     :   V           :
+   * 4.      |        ....options <-------from PARAMS-file   :
+   *         v        :     |                               :
+   *       PARSE------^     |                               :
    *    (arguments*)        |                               :
    * 5.      |              v                               :
    *         |  +-workWith(options)                         :
@@ -1345,7 +1346,6 @@ module.exports = (function(){
    *         + <------------------------ polO.properties..../
    *         v
    *       workout
-   *
    * another form of polO.work() method but with one argument as object
    * named 'options' - object with parameters' propoerties
    * @param {object} o see bellow
@@ -1410,7 +1410,7 @@ module.exports = (function(){
       a = Object.values(arguments);
       polO.anvl('work',...a);    // log printing
     }
-    
+
     label = label ? (polO.label ? label + "--" + polO.label : label) :
                     polO.label;
     polO.label = label;
@@ -1660,7 +1660,7 @@ module.exports = (function(){
    * @param {string}label - the label of project being handled
    * @param {string|Object=}opt_act Action parameter.Optional.
    *     Default value is a) 'ea' if frmoFile is not set and will have
-   *     default value, or b) 'e' if fileFrom is determined value of
+   *     default value, or b) 'e' if fromFile is determined value of
    *     full path of initial project json file
    *    it's a {string} or it is absent at all.
    *     In other cases or {string} action parameter - possible values 'e', 'a',
@@ -1721,7 +1721,7 @@ module.exports = (function(){
    * @param {string}label - the label of project being handled
    * @param {string|Object=}opt_act Action parameter.Optional.
    *     Default value is a) 'ea' if frmoFile is not set and will have
-   *     default value, or b) 'e' if fileFrom is determined value of
+   *     default value, or b) 'e' if fromFile is determined value of
    *     full path of initial project json file
    *    it's a {string} or it is absent at all.
    *     In other cases or {string} action parameter - possible values 'e', 'a',
@@ -1775,7 +1775,7 @@ module.exports = (function(){
    * @param {string}label - the label of project being handled
    * @param {string|Object=}opt_act Action parameter.Optional.
    *     Default value is a) 'ea' if frmoFile is not set and will have
-   *     default value, or b) 'e' if fileFrom is determined value of
+   *     default value, or b) 'e' if fromFile is determined value of
    *     full path of initial project json file
    *    it's a {string} or it is absent at all.
    *     In other cases or {string} action parameter - possible values 'e', 'a',
