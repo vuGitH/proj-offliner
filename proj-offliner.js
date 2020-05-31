@@ -50,21 +50,18 @@ module.exports = (function(){
   polO.log.point = {
     off: function(group){
       var pp = polO.log.point;
-      var ks = Object.keys(pp), ki;
+      var vs = Object.values(pp),
+          ks = Object.keys(pp),
+          g = pp[group];          
       if(!group || group === 'all'){
-        for(var k = 0; k < ks.length; k++){
-          ki = ks[k];
-          if(typeof pp[ki] === 'function'){
-            continue;
+        vs.forEach((el,j)=>{
+          if(Array.isArray(el)){
+            el.forEach((e,i) => {polO.log.point[ks[j]][i]= 0;});
           }
-          if( !Array.isArray(pp[ki])){
-            continue;
-          }
-            pp[ki] = pp[ki].map(e => 0);
-        }
+        });        
       }else{
-        if(Array.isArray(pp[group])){
-          pp[group] = pp[group].map( e => 0);
+        if(Array.isArray(g)){
+          g.forEach((e,i) => {polO.log.point[group][i] = 0;});
         }else{
           throw "incorrect callee method name!";
         }
@@ -72,22 +69,18 @@ module.exports = (function(){
     },
     on: function(group){
       var pp = polO.log.point;
-      //console.log(pp);
-      var ks = Object.keys(pp), ki;
+      var vs = Object.values(pp),
+          ks = Object.keys(pp),
+          g = pp[group];          
       if(!group || group === 'all'){
-        for(var k = 0; k < ks.length; k++){
-          ki = ks[k];
-          if(typeof pp[ki] === 'function'){
-            continue;
+        vs.forEach((el,j)=>{
+          if(Array.isArray(el)){
+            el.forEach((e,i) => {polO.log.point[ks[j]][i]= 1;});
           }
-          if( Array.isArray(pp[ki])){
-            pp[ki] = pp[ki].map(e => 1);
-          //console.log(ki + '\n'+ typeof pp[ki] + '\n' + pp[ki]);
-          }
-        }
+        });        
       }else{
-        if(Array.isArray(pp[group])){
-          pp[group] = pp[group].map( e => 1);
+        if(Array.isArray(g)){
+          g.forEach((e,i) => {polO.log.point[group][i] = 1;});
         }else{
           throw "incorrect callee method name!";
         }
@@ -1558,7 +1551,6 @@ module.exports = (function(){
    * @param {string} title comment's title on preceeded line
    * @param {Object} options
    * @param {Array.<string>}opt_list list of properties names to print
-   */
    */
   polO.pop = function(opt_title,options,opt_list){
     var list = opt_list && opt_list.length ===0 ? Object.keys(options) : opt_list;
