@@ -1,0 +1,172 @@
+```
+/*
+ * stack chain:
+ * Definitions:
+ * Refs - means the connection (call) of caller and callee typical
+ * function/method call
+ * 
+ * Connection (call) between to block could be realized or
+ * - by call from scritp methodname()
+ * or
+ * - by event emitting the listener of whom the calle should be
+ * or
+ * - callee could be callback function of caller - means being a caller function's paramter
+ 
+
+|   EVOKE             |                       |                       |          |
+|                     | listens evnt          |    emits event        |   refs   |
+|---------------------|  :---------:          |  :---------:          |:----     |
+|                     |                       |                       |          |
+| runLanch            |                       |                       |          |
+|     !               |                       |                       |          |
+| run                 |                       |                       |          |
+|     !               |                       |                       |          |
+| workWith            |                       |                       |          |
+|     !               |                       |                       |          |
+| work                |  +_arguments_+        |  +_assemble_+,        | ASSEBMLE |
+|     !               |                       |  +_evoke_+            | EVOKE    |
+|     !               |                       |                       |          |
+|     V               |                       |                       |          |
+
+
+
+|   EVOKE             |                       |                       |          |
+|                     | listens evnt          |    emits event        |   refs   |
+|---------------------|  :---------:          |  :---------:          |:----     |
+|   EVOKE             |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+| evokeAspFiles       |                       |  'toFolderReady'      |          |
+|     !               |                       |                       |          |
+|     v               |                       |                       |          |
+| evokeObjFromFile    |'toFolderReady'        | 'objectReady'         |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+| evokeScriptsFromObj |'objectReady'          |                       |          |
+|     !               |                       |                       |          |
+|     v               |                       |                       |          |
+| writeParamsFile     |                       |  'endpoint-e'         |          |
+|     |    ^          |                       |                       |          |
+|     v    :          |                       |                       |          |
+| checkParamsFileName |                       |                       |          |
+|     !    ^          |                       |                       |          |
+|     v    :          |                       |                       |          |
+| checkFileName       |                       |                       |          |
+|     !    ^          |                       |                       |          |
+|     v    :          |                       |                       |          |
+| increaseDigitInPath |                       |                       |          |
+|                     |                       |                       |          |
+| eEndPoint           | 'endpoint-e'          |                       |          |
+                                                                       
+                                                                       
+|    ASSEBMLE         |                       |                       |          |
+|                     |    listens            |    emits event        |          |
+|-------------------  |   :---------:         |  :----------:         |          |
+|                     |                       |                       |          |
+|   ...               |                       |                       |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|  ...                |                       |                       |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|  ...                |                       |                       |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|  ...                |                       |                       |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+| assembleProjFile    |                       |'assembleFileReady'    |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|evokeObjFromAssFile  |'assembleFileReady'    |'preUploadAssembleFile'|          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+| preUploadFile       |'preUploadAssembleFile'|'readyWriteOutputFile' |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|  writeAssFile       |                       | 'endpoint-a'          |          |
+|    !                |                       |                       |          |
+|    v                |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+|                     |                       |                       |          |
+| aEndpoint           | 'endpoint-a'          |                       |          |
+
+*/
+```
+
+```
+/*
+
+Listens:
+PARSE:  runLaunch > run> workWith > work >
+Emits:                              _evoke_,_assemble__
+refs:
+
+
+Listens:                                                   _toFolderReady_   _objectReady_                           _endpoint-e_
+EVOKE:  runLaunch > run> workWith > work > evokeAspFiles > evokeObjFromFile > evokeScriptsFromObj > writeParamsFile -> eEndPoint
+Emits:                                                     _objectReady_                           _endpoint-e_
+refs:                                                                                                    (1)
+
+(1)     : checkParamsFileName -> increaseDigitInPath
+                ...           <-      :
+
+
+Listens
+ASSEBMLE: runLaunch > run > workWith > work > assembleProjFile > evokeObjFromAssFile > preUploadFile > writeAssFile
+Emits
+refs:                                           (2); (3)
+
+(2)    :  assfile -> separatePathAndFileName
+           ...    <-         :
+
+(3)    : checkAssFileName -> checkFileName
+            ...           <-     :
+arguments:
+*/
+
+
+
+
+
+comment like incertion into script body:
+
+```
+/**
+ * @description
+ * of input parameters procedure
+ * steps:
+ *
+ * 1. polO.reset();
+ *
+ * 2.1                  set manually if any --------->  polO.properties
+ *                            or                          :
+ * 2.2   options <----------- set manually if any         :
+ *         |                  or                          :
+ * 2.3     |                  write file PARAMS.json      :
+ * 3.      v                                  |           :
+ *  run(arguments*)                           |           :
+ *         |        .......................   |           :
+ *         |        :                     :   V           :
+ * 4.      |        ...options <-------from PARAMS-file   :
+ *         v        :     |                               :
+ *       PARSE------^     |                               :
+ *    (arguments*)        |                               :
+ * 5.      |              v                               :
+ *         |  +-workWith(options)                         :
+ *         |  |                                           :
+ * 6.      v  v                                           :
+ * work(arguments)                                        :
+ *         |                                              :
+ *         + <------------------------ polO.properties..../
+ *         v
+ *       workout
+ */
+```

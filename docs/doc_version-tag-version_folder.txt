@@ -1,6 +1,6 @@
 # Версия - Тэг - Папка версии
 
-Тэг в Git - брэнч, который больше ни изменяется, т.е. после создания к нему не добавляется новых изменение (commits).
+Тэг в `Git` - брэнч, который больше ни изменяется, т.е. после создания к нему не добавляется новых изменений (commits).
 
 В случае, когда речь идет о некотором состоянии ветки(branch) master, которое соответствует некому состоянию развития проекта, который надо запомнить в неизменяемом в дальнейшем виде (например, объявить новой версией), этот tag и есть сохранение этого состояния (промежуточный "конец истории").
 В случае,если этот tag соответствует новой(последней) версии проекта, он может быть новым релизом проекта с номером(именем) совпадающим с номером(именем) релиза(версиси). 
@@ -10,16 +10,17 @@
 **Папка версии** - используется мною, как полная копия проекта на локальном диске в момент обявления этой версии _готовой_.
 Все файлы и под-папки пакета на этой стадии помещаются в отдельную папку. Ей присваивается имя, совпадающее с номером версии, и из этой папки происходит сохранение проекта в 
 
-- в удаленный репозитарий Git, локальный( на том же компьютере/диске, что и проект, либо связь с которым осуществляется через локальную сеть или интернет.
+- в удаленный репозитарий `Git`, локальный( на том же компьютере/диске, что и проект, либо связь с которым осуществляется через локальную сеть или интернет.
 - в депозитарий npm https://npmjs.com/package/proj-offliner в случае разработки модуля(проекта) node.js.
 - выгружается в архивный файл .gzip | .tar
+- в репозитарий на gitHub
 
-remark: Following the terminology described bellow (or following the concept of the architecture determined here) there is no strict necessity to upload version's content literrally from the version's directory. Because of the fact, that at the moment of the new version has been ultimately prepared for sharing, the content of root directory (for ex. master branch) and the content of newly created _version's directory_ (version named branch) are similar (excluding previously created versions' folder who are ignored or for commit or for transfer into the new version' folder )
+remark: Following the terminology described bellow (or following the concept of the architecture determined here) there is no strict necessity to upload version's content literrally from the version's directory. Because of the fact, that at the moment when the new version has been ultimately prepared for sharing, the content of root directory (for ex. master branch) and the content of newly created _version's directory_ (version named branch) are similar (excluding previously created versions' folder who are ignored or for commit or for transfer into the new version' folder )
 
 До момента создания новой папки новой версии, работа с файлами проекта происходит в _корневой папке проекта_. _Корневая папка проекта_ - папка, имя которой совпадает с именем проекта; 
 - в случае node.js в этой же папки находится файл package.json.
 - в случае clasp в этой паптке находится .clasp.json
-- в отношении работы над проектом с использованием VCS Git содержимое корневой папки может соответствовать branch `master`. (Чтобы добиться соответствия _корневая папка) - master, _папка версии_ - branch <version>, надо чтобы имя _папки версии_ было включено в файл .gitignore . Либо эта папка должны быть удалена командой git rm -r -- cached <_папка версии_>. Это приводит к тому, что папка сохраняется в working directory, но не отслеживается git (is untracked).
+- в отношении работы над проектом с использованием `VCS Git` содержимое корневой папки может соответствовать branch `master`. (Чтобы добиться соответствия _корневая папка_ - `master`, _папка версии_ - branch <version>, надо чтобы имя _папки версии_ было включено в файл .gitignore . Либо эта папка должны быть удалена командой git rm -r -- cached <_папка версии_>. Это приводит к тому, что папка сохраняется в working directory, но не отслеживается git (is untracked - не попадает в index  или не может быть staged "выставленной на сцену").
 
 _Корневая папка проекта_ соответствует ветке(branch) - `master` в момент истории, сразу, после только что созданной очередной версии, содержимое _корневой папки проекта_ и _папки версии_ совпадают, а содержимое корневой папки соответствует содержимому ветки(бренча) master.
 
@@ -29,8 +30,8 @@ _Корневая папка проекта_ соответствует ветк
 
 Процедура формирования очередной версии (`git - node` среда):
 
-`Node`(npm) требует версию из соответствующей _папки версии_ или ссылку на git repo верcии
-`Git` позволяет формировать версию,  как отдельный tag, подобно commit-у, определяющийся в истории фиксированной SHA1 - "точкой",  полученный из ветки master (master branch) на определенный момент истории пакета.
+`Node`(npm) требует версию из соответствующей _папки версии_ или ссылку на git-repo верcии.
+`Git` позволяет формировать версию,  как отдельный tag - "конец истории", заканченной commit-ом, определяющимся в истории фиксированной SHA1 - "точкой" -, полученный из ветки master (master branch или любой другой ветки branch) на определенный момент истории пакета.
 
 ### Создание версии и tag
 
