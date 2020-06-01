@@ -108,6 +108,26 @@ module.exports = (function(){
         pp[group][member] = 1;
       }
     },
+    /**
+     * Changes log print setting for method specified
+     * For test reason polO.log.point object has print points array
+     * polO.log.point.methodName with elements 1 or 0 mean printOn or Off.
+     * @param {number|Boolean} onoff switch flag. 1 or 0 or any other type's
+     *   values provide  equivalent value of (onoff) ? 1 : 0;
+     * @param {string} gr group name(method name)
+     * @param {string} inds string of indices of polO.log.point[gr] array
+     *   elements which values should be set to onoff param value
+     * @example .setlp(1,'workTest','0,5,6') sets polO.log.point.workTest 
+     *   array's elements with indices 0,5 and 6 to 1 - means 'print on'.
+     */
+    setlp(onoff,gr,inds){
+      var vs = polO.log.point[gr],
+          v = inds.split(',');
+      vs.forEach((e,i) => {    
+      if( v.indexOf(''+i) >= 0){   
+        polO.log.point[gr][i] = (onoff)? 1:0;      
+      }});
+    },
     ppp: [1],
     getOutputFile: [1,0],
     getPathFrom: [1,1,1],
@@ -2850,3 +2870,18 @@ polO.getDefaultFromFile =  function(act){
 
     return polO;
 }());
+/**
+ * 
+ * @param {number|Boolean} onoff equivalent of 1 or 0 in equation (onoff)?1:0;
+ * @param {string} gr method(group) name
+ * @param {string} inds string of indices of polO.log.point[gr] which value
+ *   should be set to onoff
+ */
+var setlp = (onoff,gr,inds) => {
+  var vs = polO.log.point[gr],
+      v = inds.split(',');
+  vs.forEach((e,i) => {    
+    if( v.indexOf(''+i) >= 0){   
+      polO.log.point[gr][i] = (onoff)? 1:0;      
+    }});
+  };
