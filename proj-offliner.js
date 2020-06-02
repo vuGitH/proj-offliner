@@ -154,7 +154,7 @@ module.exports = (function(){
     getOutputFile: [1,0],
     getPathFrom: [1,1,1],
     evokeAspFiles: [1],
-    workTest: [1,0,0,0,0,0,0,0,0,0,0,0],
+    workTest: [1,0,0,0,0,0,0,0,0,0,0,0,0],
     runLauncher: [1],
     run: [1,1,1],
     runGetOptionsObj: [1,1,1,1],
@@ -360,22 +360,6 @@ module.exports = (function(){
   };
   
   polO.myEE = polO.getEventsEmInstance();
-    /**
-   * sets event listeners
-   * 'objReady' - is fired when object got from json file is ready
-   * 'toFolderReady' - is fired when destination folder has become
-   * determined
-   */
-  polO.setEvents = function(myEE){
-    myEE.on('toFolderReady',polO.evokeObjFromFile);
-    myEE.on('assembleFileReady',polO.evokeObjFromAssFile);
-    myEE.on('objReady',polO.evokeScriptsFromObj);
-    myEE.on('preUploadAssembleFile',polO.preUploadFile);
-    myEE.on('preUploadAssembleFileAsync',polO.preUploadFileAsync);
-    myEE.on('readyWriteOutputFile',polO.writeAssFile);
-    myEE.on('endpoint-e',polO.eEndpoint);
-    myEE.on('endpoint-a',polO.aEndpoint);
-  }(polO.myEE);  //  or polO.setEvents(polO.myEE);
 
   
 
@@ -2889,6 +2873,25 @@ polO.getDefaultFromFile =  function(act){
       polO.assembleProjFile(label,fromFile,pathFrom);
     }
   };
+  /**
+   * ----------- events' LISTENER -------------- *
+       /**
+   * sets event listeners
+   * 'objReady' - is fired when object got from json file is ready
+   * 'toFolderReady' - is fired when destination folder has become
+   * determined
+   */
+  polO.setEvents = function(myEE){
+    myEE.on('toFolderReady',polO.evokeObjFromFile);
+    myEE.on('assembleFileReady',polO.evokeObjFromAssFile);
+    myEE.on('objReady',polO.evokeScriptsFromObj);
+    myEE.on('preUploadAssembleFile',polO.preUploadFile);
+    myEE.on('preUploadAssembleFileAsync',polO.preUploadFileAsync);
+    myEE.on('readyWriteOutputFile',polO.writeAssFile);
+    myEE.on('endpoint-e',polO.eEndpoint);
+    myEE.on('endpoint-a',polO.aEndpoint);
+  }(polO.myEE);  //  or polO.setEvents(polO.myEE);
+
 
     return polO;
 }());
