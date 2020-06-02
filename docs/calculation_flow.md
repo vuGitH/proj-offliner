@@ -1,14 +1,13 @@
 
 # calc flow structure
 
-Abreviation used:
-*__Class__*  - class or part of project
-**methodName()**  - method or function
-_eventName_ - event's name
+Abreviation used:  
+*__Class__*  - class or part of project  
+**methodName()**  - method or function  
+_eventName_ - event's name  
 +_eventName-notDeterminedYet_+ - event not realized yet.
 
-connec
-
+## methods-events connection
 
 |   Class/method         | listens event        |    emits event       |
 |:---                    |  :---------:         |  :---------:         |
@@ -51,7 +50,7 @@ connec
 |  **writeAssFile**     |                       | _endpoint-a_          |
 | **aEndpoint**         | _endpoint-a_          |                       |
 
-&#10024; test 
+&#10024; test
 
 |  Class/method         |    listens            |    emits event        |
 | :-------------        |   :---------:         |  :----------:         |
@@ -61,6 +60,7 @@ connec
 |                       |                       |                       |
 |**assembleProjFile**   |                       |                       |
 |**evokeAspFiles        |                       |                       |
+|                       |                       |                       |
 |**workTest()**         |                       |                       |
 |**runLauncher**        |                       |                       |
 
@@ -68,12 +68,12 @@ connec
 
 &#10024; parse step
 
-|            |           |     |           |       |
-|:---        |:---       |:--- |:---       |:---   |
-|Listens:    | _push_          |     |           |       |
-|*__PARSE__*:| runLaunch>| run>| workWith >| work >|
-|Emits:      | _args-ready_          |     |           |       |
-|refs:       |           |     |           |       |
+|            |                |     |           |       |
+|:---        |:---            |:--- |:---       |:---   |
+|Listens:    | +_push_+       |     |           |       |
+|*__PARSE__*:| runLaunch>     | run>| workWith >| work >|
+|Emits:      | +_args-ready_+ |     |           |       |
+|refs:       |                |     |           |       |
 
 &#10024; evoke step
 
@@ -97,7 +97,6 @@ connec
 |*__ASSEBMLE__*:| runLaunch>| run>| workWith>| work>| assembleProjFile>| evokeObjFromAssFile>| preUploadFile>| writeAssFile|
 |Emits:         |           |     |          |      |                  |                     |               |             |
 |refs:          |           |     |          |      |  (2); (3)        |                     |               |             |
-
 
 |REFS||||
 |:-|-:|:-:|:-|

@@ -1,15 +1,21 @@
 # Project evolution remarks
 
-## temporal topic branch **run-threds**
+(the last update go first)
+
+## update 02.06.2020
+
+## update: temporal topic branch **run-threds**
 
 The reason to create topic branch __run-threds__
- - split polO.run into blocks,  
- - incert polO.workWith
+
+- split polO.run into blocks,  
+- incert polO.workWith
 
 task:
 
 1. to make polO.run method more compact.
-2. provide possibility to represent arguments of `polO.work(...args)`  as single object ~options~  
+2. provide possibility to represent arguments of `polO.work(...args)`  
+as single object ~options~  
 For this purpouse special topic branch 'run-threds' has been created
 
 for step 1 the following sub-methods are incerted into the flow of lines  of
@@ -35,5 +41,85 @@ equivalent calls:
 `polO.work(arg0Name, arg1Name, ...)`  
 see code sources for details
 
-## update 31.05.2020
+## update: exclude unnecessary stuff
 
+Exclude all unnecessary stuff from main branch and version's directory
+
+- At first I need to commit everything including actual .gitignore
+git commit -m "before cleancing all unnecessary stuff excluding
+only file really need for version usage and publishing
+
+      git commit -m "keep all for a chance to need in the future"
+      git add .gitignore
+      git commit -m '.actual .gitignore'
+
+      git rm -r --cached .
+
+## update: new .gitignore file
+
+```git
+# ignore specified files and directories
+
+.markdownlint.json
+.eslintrc.json
+.vscode/
+.gitignore
+.npmignore
+testMy.js
+docs/doc_version-tag-version_folder.txt
+
+# ignore all files in params/ directory
+# (the path relative to .gitignore host directory)
+
+params/*
+
+# excluding
+!params/a_params.json
+!params/e_params.json
+!params/ea_params.json
+!params/allDefaults_params.json
+
+# ignore all files in test/ directory
+test/*
+
+# excluding
+!test/pathFrom
+!test/testMe.js
+!test/testProjFile.json
+
+test/out/*
+!test/out/
+!test/out/pathFrom
+
+# versions' folders
+1.*/
+v1.*/
+clone-test/
+node_modules/
+```
+
+add necessary files for next commit
+
+```cmd
+git add .
+git commit -m "new version's files selected"
+```
+
+commiting when .gitignore has been already prepared (see previous itemes)
+
+## update: evoked files' types
+
+Types of Files' evoked from AppsScript project json file downloaded are determined on the bases of the follows:  
+The content of each i-th file's object is `file = projObj.files[i]` is kept in property `file.source` as string.  
+File's type - `file.type'`.  
+Actual file types known are: `('server_js'|'html'|'json')`
+Appropriate files' extentions of files evoked are `('.js'|'.html'|'.json')`  
+Depending on the value of file type the extention of file evoked
+is determined while sources files are saved into folder on local PC.
+`proj-offliner.js` method `polO.preUploadFile` to insert
+
+        var fExt;
+        // ...
+        fExt = file.type ? polO.setFileExtention(file.type) : 'unknown';
+        // ...
+        fpath = pathFrom + sp + fname + '.' + fExt';
