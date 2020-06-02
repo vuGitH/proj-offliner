@@ -48,11 +48,10 @@ command
 
 ## Usage
 
-<!-- markdownlint-disable MD033 -->
-### <a name='inComPrompt'></a>  In command line
+### In command line
 
 *(for usage inside your modules scripts go to the
- [usage inside modules](#inModuleUse) )*
+ [usage inside modules](#usage-inside-module-codes) )*
 
 For usage in command prompt commands make proj-offliner main directory being
 the current working directory.
@@ -334,7 +333,7 @@ path.baseName (fromFile,'.json') file name without extension and
 Default value of action parameter is  `'ea'` for tests but  if `fromFile`  
 argument is set by user default action parameter is equal to str `'e'`.
 
-### <a name='inModuleUse'></a>Usage Inside Module Codes
+### Usage Inside Module Codes
 
 While `proj-offliner` module has been installed locally or is set as
 property of **dependencies** or **devDependencies** objects of your module's  
@@ -343,14 +342,15 @@ property of **dependencies** or **devDependencies** objects of your module's
 
 ```javascript
 var pol = require('./') ||
-          require('./proj-offliner.js');
+          require('./proj-offliner.js') ||
+          require('proj-offliner');
 ```
 
 proj-offliner object (later - pol) has flexible method `pol.run` supplying  
 full functionality similar to that has been described for __npm run pol ...__  
 command prompt commands above.
 
-Keeping meaning of notations mentioned in [command prompt usage](#inComPrompt)
+Keeping meaning of notations mentioned in [command prompt usage](#in-command-line)
 paragraph the generic call of run method is looked like
 
 ```javascript
@@ -644,7 +644,17 @@ version of assembled file provided in sequential calculation run.  **N** is
 increased each time by one, to guaranty that `outputFile`-s versions do not  
 overwrite one another into the directory determined by path `opt_pathFrom`
 
-### Thank you
+## Docs and developement (working materials)
+
+Find some additional explanations in ./docs folder
+
+- [calculation flow](./docs/calculation_flow.md "methods and events structure")
+- similar [in txt file](docs/calculation_flow.txt "practically the same as previouse items doc but in txt-file")
+- [version's tags and directories](./docs/doc_version-tag-version_folder.txt "rules to create tags and folders for different versions")
+- some [project's evolution](docs/project-evolution.md)
+- [TODO](docs/TODO_for_pol.md)
+
+## Thank you
 
 Comments and remarks welcome!  
 v.url.node@gamil.com
