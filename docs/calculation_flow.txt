@@ -13,10 +13,10 @@
  * - callee could be callback function of caller - means being a caller function's paramter
  
 
-|   EVOKE             |                       |                       |          |
-|                     | listens evnt          |    emits event        |   refs   |
+|  class/method       | listens evnt          |    emits event        |   refs   |
 |---------------------|  :---------:          |  :---------:          |:----     |
 |                     |                       |                       |          |
+
 | runLanch            |                       |                       |          |
 |     !               |                       |                       |          |
 | run                 |                       |                       |          |
@@ -30,8 +30,7 @@
 
 
 
-|   EVOKE             |                       |                       |          |
-|                     | listens evnt          |    emits event        |   refs   |
+|  class/method       | listens evnt          |    emits event        |   refs   |
 |---------------------|  :---------:          |  :---------:          |:----     |
 |   EVOKE             |                       |                       |          |
 |                     |                       |                       |          |
