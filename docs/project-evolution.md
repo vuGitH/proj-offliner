@@ -2,7 +2,12 @@
 
 (the last update go first)
 
-## update 02.06.2020
+## update 03.06.2020
+
+The run has been refactored. Proj-offliner.js script has been devided
+into logical block. Now not as separate class but only methods' location
+in lines stream along the file body.
+Parts: LOG, UTILITIES, PARSE, EVOKE, ASSEMBLE, TEST, RUN
 
 ## update: temporal topic branch **run-threds**
 

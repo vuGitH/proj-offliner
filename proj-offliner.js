@@ -39,7 +39,7 @@ module.exports = (function(){
   polO.assFileName = "";
   polO.prefixTo = "";
   polO.no6 = false;
-  
+
   /**
    *
    * ---------------- LOG  -------------------------------
@@ -139,39 +139,39 @@ module.exports = (function(){
      * @param {string} gr group name(method name)
      * @param {string} inds string of indices of polO.log.point[gr] array
      *   elements which values should be set to onoff param value
-     * @example .setlp(1,'workTest','0,5,6') sets polO.log.point.workTest 
+     * @example .setlp(1,'workTest','0,5,6') sets polO.log.point.workTest
      *   array's elements with indices 0,5 and 6 to 1 - means 'print on'.
      */
     setlp(onoff,gr,inds){
       var vs = polO.log.point[gr],
           v = inds.split(',');
-      vs.forEach((e,i) => {    
-      if( v.indexOf(''+i) >= 0){   
-        polO.log.point[gr][i] = (onoff)? 1:0;      
+      vs.forEach((e,i) => {
+      if( v.indexOf(''+i) >= 0){
+        polO.log.point[gr][i] = (onoff)? 1:0;
       }});
     },
-    ppp: [1],
-    getOutputFile: [1,0],
-    getPathFrom: [1,1,1],
-    evokeAspFiles: [1],
-    workTest: [1,0,0,0,0,0,0,0,0,0,0,0,0],
+    ppp: [0],
+    getOutputFile: [0,0],
+    getPathFrom: [0,0,0],
+    evokeAspFiles: [0],
+    workTest: [0,0,0,0,0,0,0,0,0,0,0,0,0],
     runLauncher: [1],
     run: [1,1,1],
-    runGetOptionsObj: [1,1,1,1],
-    runArg_0_1_obj_or_file: [1,1,1],
-    runArg_1_2_obj_or_file: [1,1],
-    runArg_2_fromFile_gear: [1],
-    runArgsToOptions:[1,1],
-    work: [1,1,1,1],
-    evokeScriptsFromObj: [1,1,1],
-    writeParamsFile: [1,1,1],
+    runGetOptionsObj: [0,0,0,0],
+    runArg_0_1_obj_or_file: [0,0,0],
+    runArg_1_2_obj_or_file: [0,0],
+    runArg_2_fromFile_gear: [0],
+    runArgsToOptions:[0,0],
+    work: [0,0,0,0],
+    evokeScriptsFromObj: [0,0,0],
+    writeParamsFile: [0,0,0],
     eEndpoint: [1,1],
     aEndpoint: [1],
-    assembleProjFile: [1,1],
-    preUploadFile: [1,1,1],
-    preUploadFileAsync: [1,1,1],
-    writeAssFile: [1,1],
-    getAssFileName: [1],
+    assembleProjFile: [0,0],
+    preUploadFile: [0,0,0],
+    preUploadFileAsync: [0,0,0],
+    writeAssFile: [0,0],
+    getAssFileName: [0],
     mems: {
       workTest: []
     }
@@ -358,10 +358,10 @@ module.exports = (function(){
     class EE extends Events{}
     return new EE();
   };
-  
+
   polO.myEE = polO.getEventsEmInstance();
 
-  
+
 
   //  --- UTILITIES  ------
     /**
@@ -824,16 +824,22 @@ module.exports = (function(){
     var pathFrom,
         lp = polO.log.point.eEndpoint;
     if(lp[0]){
-      console.log('\n\nEndpoint of Evoke-mode has been reached.'+
-                ' Event \'endopoint-e\'\n'+
-                'label = '+ label +
-                '\npathTo =\n' + pathTo );
+      console.log('\n\nEvoke finished. Event \'endopoint-e\' fired\n'+
+                  'act = %s\n' +
+                  'fromFile=\n%s\n' +
+                  'pathTo =\n' +
+                  'label = %s\n',
+                  act,
+                  frmoFile,
+                  pathTo,
+                  label);
     }
     if( act === 'ea'){
       pathFrom =  pathTo;
       polO.pathFrom = pathFrom;
       polO.pathTo = '';
       polO.work(label,'a',fromFile,'',pathFrom);
+      return;
     }
     if(lp[1]){
       console.log('Exit from eEndpoint without chaining for\n' +
@@ -1303,8 +1309,7 @@ module.exports = (function(){
     var lp = polO.log.point.aEndpoint;
     polO.lastAEndpoint = new Date().getTime();
     if(lp[0]){
-      console.log('\n\nEndpoint of Assemble-mode has been reached.'+
-                ' Event \'endopoint-a\'\n'+
+      console.log('\n\nAssemble Endpoint. Event \'endopoint-a\' fired\n'+
                 'outputFile =\n%s\n' +
                 'label = %s',
                 outputFile,
@@ -1439,7 +1444,7 @@ module.exports = (function(){
         o = options;
     pn.forEach((el) => {ro[el] = o[el] ? o[el].toString() : ro[el];});
   };
-  
+
   /**
  * returns default fromFile absolute full path value
  * dependent on act-parameter value
@@ -1760,37 +1765,6 @@ polO.getDefaultFromFile =  function(act){
    * @param {}opt_sixth - is used as ... parameter in methods of module
    * @param {}opt_seventh - is used as ... parameter in methods of module
    */
-  polO.runLauncher_ = function(opt_label,opt_t, opt_first, opt_second, opt_third,
-      opt_fourth, opt_fifth, opt_sixth, opt_seventh){
-    var label = opt_label || 'absence of label is bad practice' ;
-    if( opt_t &&
-        (typeof opt_t !== 'number' )){
-      throw 'being set first parameter should be a number of milliseconds';
-    }
-    var t = (polO.timeLag === 0) ? 0 : polO.timeLag;
-    polO.timeLag +=  ((opt_t )? opt_t : 10000 );
-
-    var arg = [1,2,3,4,5,6,7];
-
-    arg[0] = opt_first || '';
-    arg[1] = opt_second || '';
-    arg[2] = opt_third || '';
-    arg[3] = opt_fourth || '';
-    arg[4] = opt_fifth || '';
-    arg[5] = opt_sixth || '';
-    arg[6] = opt_seventh || '';
-    arg.forEach((e,i)=>{console.log(i+' -> ' + e);});
-    console.log('t=%s',t);
-
-    setTimeout( function(){
-                  polO.resetPars(polO);
-                  polO.label = label;
-                  polO.run(label,
-                           arg[0],  // act
-                           arg[1],  // fromFile
-                           arg[2],arg[3],arg[4],arg[5],arg[6]);
-                }, t);
-  };
   polO.runLauncher = function(opt_label, opt_t, opt_first, opt_second, opt_third,
       opt_fourth, opt_fifth, opt_sixth, opt_seventh){
     var label = opt_label || 'absence of label is bad practice',
