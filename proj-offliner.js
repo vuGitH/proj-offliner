@@ -151,8 +151,8 @@ module.exports = (function(){
       }});
     },
     ppp: [0],
-    getOutputFile: [0,0],
-    getPathFrom: [0,0,0],
+    getOutputFile: [0,0,0,0,0],
+    getPathFrom: [0,1],
     evokeAspFiles: [0],
     workTest: [0,0,0,0,0,0,0,0,0,0,0,0,0],
     runLauncher: [1],
@@ -172,6 +172,7 @@ module.exports = (function(){
     preUploadFileAsync: [0,0,0],
     writeAssFile: [0,0],
     getAssFileName: [0],
+    isArgPathFrom: [0,0,0],
     mems: {
       workTest: []
     }
@@ -247,6 +248,13 @@ module.exports = (function(){
       // last file handled
       console.log('AppsScript\'s-proj Files are evoked into folder:\n' +
         pathTo +'\n');
+    }
+  ];
+  polO.log.point.isArgPathFrom.print = [
+    function(fromFile, arg, isPath){
+      console.log('in isArgPathFrom:\nfromFile=\n%s\narg=\n%s\n' +
+                'fs.existsSync(arg) = %s',
+                fromFile, arg, isPath);
     }
   ];
   polO.log.point.assembleProjFile.print = [
@@ -1476,6 +1484,7 @@ polO.getDefaultFromFile =  function(act){
         fF = opt_fromFile, // fromFile
         pxT = opt_prefixTo, // prefixTo
         pF = opt_pathFrom; // pathFrom
+    var lp = polO.log.point.getPathFrom;
     if( act === 'a' || act === 'ato'){
       if(!pxT){
         // prefix's sit is filled by empty string (opt_prefixTo = '')
@@ -1495,7 +1504,9 @@ polO.getDefaultFromFile =  function(act){
       }else{
         // checks if pathFrom sits on prefixTo place?
         if( polO.isArgPathFrom(fF,pxT)){
-          console.log('in getPathFrom: pathFrom is sitting on opt_Prefix place');
+          if(lp[0]){
+            console.log('in getPathFrom: pathFrom is sitting on opt_Prefix place');
+          }
           return polO.absPath(pxT);
         }else if(/\.json$/.test(pF)){
           throw 'in getPathFrom: json file path instead of pathFrom';
@@ -1504,7 +1515,9 @@ polO.getDefaultFromFile =  function(act){
         }
       }
     }else{
-      console.log( 'pathFrom parameter is set for Non \'a\' cases?!');
+      if(lp[1]){
+        console.log( 'pathFrom parameter is set for Non \'a\' cases?!');
+      }
       return pF ? pF : polO.pathFrom;
     }
   };
@@ -1531,23 +1544,27 @@ polO.getDefaultFromFile =  function(act){
    *    pathFrom folder path
    */
   polO.isArgPathFrom =  function( fromFile,arg){
-    var fList, obj, files;
-    console.log('in isArgPathFrom:\nfromFile=\n%s\narg=\n%s\n' +
-    'fs.existsSync(arg) = %s',
-        fromFile, arg, fs.existsSync(arg));
-    if( !fs.existsSync(arg) ){
+    var fList, obj, files,
+        isPath = fs.existsSync(arg);
+        lp = polO.log.point.isArgPathFrom;
+    if(lp[0]){
+      lp.print[0](fromFile,arg,isPath); }
+
+    if(!isPath){
       return false;
     }
     fnms = require(fromFile).files.
         map( function(fl){return fl.name;} );
     try{
-      fList = fs.readdirSync( arg).
+      fList = fs.readdirSync(arg).
         map( function(el){ return el.replace(/\..+$/,'');}); // no f.extention
     }catch(e){
       console.log('entity considering as directory is not that one!');
       return false;
     }
-    console.log('arrays:\nfnms=\n%s\nfList=\n%s',fnms,fList);
+    if(lp[1]){
+      console.log('arrays:\nfnms=\n%s\nfList=\n%s',fnms,fList);}
+
     var testV= (function(){
       for( var i=0; i<fnms.length; i++){
         if( fList.indexOf(fnms[i])<0){
@@ -1556,9 +1573,11 @@ polO.getDefaultFromFile =  function(act){
       }
       return true;
     }());
-    console.log(testV ? 'This is pathFrom' : 'it is NOT pathFrom');
-    return testV;
 
+    if(lp[2]){
+      console.log(testV ? 'This is pathFrom' : 'it is NOT pathFrom');}
+
+    return testV;
   };
   /**
    * returns outputFile value dependent on the values of other
@@ -1580,12 +1599,13 @@ polO.getDefaultFromFile =  function(act){
         pF = opt_pathFrom,  // pathFrom
         aFN = opt_assFileName,  // assFileName
         ouF = opt_outputFile; //outputFile
-    var aF, a;  // assemble full path, arguments
-
-    /** @property {Array.<>} method's input parameters */
-    a = Object.values(arguments);
-    polO.anv('getAssFileName',...a);
-
+    var aF, a,  // assemble full path, arguments
+        lp = polO.log.point.getOutputFile;
+    if(lp[0]){
+      /** @property {Array.<>} method's input parameters */
+      a = Object.values(arguments);
+      polO.anv('getOutputFile',...a);
+    }
     if( act === 'a' || act === 'ato'){
       if(!pxT){
         // prefixTo's sit is filled by empty string (opt_prefixTo = '')
@@ -1601,7 +1621,9 @@ polO.getDefaultFromFile =  function(act){
           }else if(aFN &&
                    /\.json$/.test(aFN) &&
                    !ouF ){
-            console.log('outputFile on assFileName sit');
+            if(lp[1]){
+              console.log('outputFile on assFileName sit');
+            }
             aF = aFN;
             return aF;
           }else if(aFN && ouF){
@@ -1620,10 +1642,14 @@ polO.getDefaultFromFile =  function(act){
       }else{
         // checks if pathFrom sits on prefixTo place?
         if( polO.isArgPathFrom(fF, pxT)){
-          console.log('in getAssFileName: pathFrom is sat on opt_Prefix place');
+          if(lp[2]){
+            console.log('in getOutputFile: pathFrom is sat on opt_Prefix place');
+          }
           if( pF){
             if(/\.json$/.test(pF)){
-              console.log('outputFile on pathFrom sit presumably');
+              if(lp[3]){
+                console.log('outputFile on pathFrom sit presumably');
+              }
               aF = pF;
               return aF;
             }else{
@@ -1650,7 +1676,7 @@ polO.getDefaultFromFile =  function(act){
                  aFN){
                 return ouF;
               }else{
-                console.log("in getAssFileName:" +
+                console.log("in getOutputFile:" +
                 "value of outputFile parameter doesn't match " +
                 "value of assFileName while both are set. outputFile" +
                 " is preferred");
@@ -1664,12 +1690,14 @@ polO.getDefaultFromFile =  function(act){
             }
           }
         }else if(!polO.isArgPathFrom(fF,pF)){
-          throw 'in getAssFileName: incorrect value of pathFrom';
+          throw 'in getOutputFile: incorrect value of pathFrom';
         }else{
           // pathFrom is good. Looks at assFileName
           if(aFN){
             if(/\.json$/.test(aFN)){
-              console.log('presumably outputFile on assFileName sit');
+              if(lp[4]){
+                console.log('presumably outputFile on assFileName sit');
+              }
               aF = aFN; //full path
               return aF;
             }else if(ouF){
@@ -2595,6 +2623,49 @@ polO.getDefaultFromFile =  function(act){
         fF, assFN, outF,
         lp = polO.log.point.workTest;
 
+  /**
+   * for test run lp[2], lp[3]
+   * the following actual parameters values should be preset:
+   *
+   */
+  var testFromFile = 'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes\\'+
+    'smsCikPostCallHandle_Scripts.json';
+  var testPrefixTo = 'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codesRf_';
+
+  /**
+   *
+   *
+   * To run tests of lp[7,...,12] bellow it's necessary to set
+   *  variables: fFString, pttKeyWord - see explanation bellow
+   *
+   *  @property {string} fFString full path of parameters file
+   *   located in __dirname/params/ directory with
+   * name containing key word matching pttKeyWord {ReExp} to
+   * identify it among other files by means of next expression:
+   * see bellow
+   *
+   *  fFString = path.join(process.cwd(),
+   *                 '/params/' + fs.readdirSync(
+   *                                  path.join(process.cwd(),'./params')).
+   *                              filter((fl)=>{return pttKeyWord.test(fl);})[0])
+   * This file should contain json string obligatorily determined real values of
+   * parameters see example of json string:
+   * {"act":"ea","fromFile":"DriveLetter:\\actual\\fullPath\\to\\appsScriptProjFileDownloaded.json",
+   * "prefixTo":"DriveLeter:\\full\\path\\to\\actualDirectoryNamePrefix_",
+   * "pathTo":"DriveLeter:\\full\\path\\to\\actualDirectoryNamePrefix_XXXXXX",
+   * "pathFrom":"DriveLeter:\\full\\path\\to\\actusalDirectoryNamePrefix_XXXXXX",
+   * "assFileName":"",
+   * "outputFile":"",
+   * "label":"test_run_Label_user_defined"}
+   *
+   */
+    var pttKeyWord = /43/;
+    fFString = path.join(
+      process.cwd(),
+      '/params/' + fs.readdirSync(path.join(process.cwd(),'./params')).
+      filter((fl)=>{return pttKeyWord.test(fl);})[0]);
+
+
     if(lp[0]){
       //  test (0)
       label = 'TEST all defaults Case (0)';
@@ -2624,8 +2695,7 @@ polO.getDefaultFromFile =  function(act){
     if(lp[2]){
       o = {
         act: 'e',
-        fromFile:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes\\'+
-            'smsCikPostCallHandle_Scripts.json',
+        fromFile: testFromFile,  //see above explanation comments
        prefixTo:''
       };
 
@@ -2647,9 +2717,8 @@ polO.getDefaultFromFile =  function(act){
     if(lp[3]){
       o = {
         act: 'e',
-        fromFile:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes\\'+
-            'smsCikPostCallHandle_Scripts.json',
-        prefixTo:'j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codesRf_'
+        fromFile: testFromFile,
+        prefixTo: testPrefixTo
       };
 
       //  test (1-e) fF - set pxT - set
@@ -2719,22 +2788,13 @@ polO.getDefaultFromFile =  function(act){
       polO.runLauncher( label,tau,'1'); //polO.run('1');
     }
 
-    fFString = path.join( process.cwd(),
-                         '/params/' + fs.readdirSync(
-                                          path.join(process.cwd(),'./params')).
-                                      filter((fl)=>{return /43/.test(fl);})[0]);
     if(lp[7]){
       //  test a fF pthFr(pxTo) assFN  - set
       label = '1_a_fromFile_set_pathFrom_on_prefixTo_sit';
       //fromFile
       act='a';
       fF = require(fFString).fromFile;
-      /*
-          path.join(process.cwd(),
-                    '/params/' + fs.readdirSync(
-                                     path.join(process.cwd(),'./params')).
-                                 filter((fl)=>{return /43/.test(fl);})[0]
-          )*/ /*).fromFile;*/
+
       assFN = '1-test_a_fF_pthFrm(pxTo)_assFNm';
       pthFrm = require(fFString).pathFrom;
 
@@ -2814,16 +2874,22 @@ polO.getDefaultFromFile =  function(act){
   };
   /**
    * tests current module
-   */
-  polO.test = function(){
-    var fromFile, mode, path, prefixTo, label;
-    path = "j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codes";
-    // output directory prefix
-    prefixTo = ""+
-      "j:\\Работа\\Web-design\\Workshop_VU\\vu_PEleCom\\codesRf_";
+   * 
+   *prefixTo = testPrefixTo; see value above in workTest method  
     // absolute path and filename
-    fromFile = path + "\\" + "smsCikPostCallHandle_Scripts.json";
+    fromFile = testFromFile; see above in workTest method
     label = 'Tests proj-offliner polO.test()';
+    var pathFromSuffix = "46SkrH"; // need to write actual one
+   *
+   * @param {string} fromFile
+   * @param {string} prefixTo
+   * @param {string} label of test run
+   * @param {string} pathFromSuffix addition to prefixTo - six random
+   *   alpha-numerical character to get name of actual directory
+   */
+  polO.test = function(fromFile,prefixTo,label,pathFromSuffix){
+    var mode;
+
     if(0){
     // -- evoking js files from json testing modes --
     // rf - mode
@@ -2842,7 +2908,6 @@ polO.getDefaultFromFile =  function(act){
     // assembling tests
     if(0){
       // location of asp-filess edited
-      var pathFromSuffix = "46SkrH"; // need to write actual one
       var pathFrom = prefixTo + pathFromSuffix;
       polO.assembleProjFile(label,fromFile,pathFrom);
     }
